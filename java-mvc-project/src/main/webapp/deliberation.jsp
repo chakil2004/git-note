@@ -59,7 +59,7 @@
 </head>
 <body>
 <div class="container">
-<h1>Délibération des Notes</h1>
+<h1>Délibération des Notes (ETU003605)</h1>
 
 <%
     // Récupérer les listes depuis la requête

@@ -87,8 +87,8 @@
             <td><%= findSolutionName(param.getSolutionId(), solutions) %></td>
             <td><%= param.getSeuil() %></td>
             <td>
-                <a href="parametres/edit?id=<%= param.getId() %>">Modifier</a>
-                <a href="parametres/delete?id=<%= param.getId() %>" onclick="return confirm('Supprimer ?');">Supprimer</a>
+                <a href="/parametres/edit?id=<%= param.getId() %>">Modifier</a>
+                <a href="/parametres/delete?id=<%= param.getId() %>" onclick="return confirm('Supprimer ?');">Supprimer</a>
             </td>
         </tr>
 <%
@@ -99,7 +99,7 @@
 </table>
 
 <h2>Ajouter un paramètre</h2>
-<p><a href="parametres/create">Ajouter un paramètre</a></p>
+<p><a href="/parametres/create">Ajouter un paramètre</a></p>
 
 <p><a href="index.jsp">Retour</a></p>
 </div>

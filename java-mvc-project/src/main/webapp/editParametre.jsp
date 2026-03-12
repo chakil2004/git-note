@@ -17,7 +17,7 @@
     <div style="padding:10px; border:1px solid #0a0; background:#dfd;">${message}</div>
 </c:if>
 
-<form action="${isNew ? 'parametres/create' : 'parametres/edit'}" method="post">
+<form action="${isNew ? '/parametres/create' : '/parametres/edit'}" method="post">
     <c:if test="${not isNew}">
         <input type="hidden" name="id" value="${parametre.id}" />
     </c:if>
@@ -28,7 +28,7 @@
     <button type="submit">${isNew ? 'Ajouter' : 'Enregistrer'}</button>
 </form>
 
-<p><a href="parametres">Retour à la liste</a></p>
+<p><a href="/parametres">Retour à la liste</a></p>
 </div>
 </body>
 </html>

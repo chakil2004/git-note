@@ -29,10 +29,6 @@ public class DeliberationService {
             "JOIN Solution s ON p.solution_id = s.id " +
             "WHERE p.matiere_id = ?";
 
-    private static final String COUNT_CORRECTEURS_SQL =
-            "SELECT COUNT(DISTINCT prof_id) AS correcteur_count FROM Note " +
-            "WHERE etudiant_id = ? AND matiere_id = ?";
-
     private static final String UPSERT_NOTE_FINALE_SQL =
             "INSERT INTO NoteFinale (etudiant_id, matiere_id, valeur) VALUES (?, ?, ?) " +
             "ON DUPLICATE KEY UPDATE valeur = VALUES(valeur)";
@@ -55,15 +51,9 @@ public class DeliberationService {
         // Print all note values used to calculate the average (for debugging / visibility)
         printNoteValues(conn, etudiantId, matiereId);
 
-        // If the student has exactly 2 correcteurs, use "Moyenne" regardless of params.
-        int correcteursCount = countCorrecteurs(conn, etudiantId, matiereId);
-        if (correcteursCount == 2) {
-            BigDecimal valeur = stats.avg;
-            upsertNoteFinale(conn, etudiantId, matiereId, valeur);
-            return valeur;
-        }
-
-        BigDecimal difference = stats.max.subtract(stats.min);
+        // Use the correct difference calculation method
+        NoteService noteService = new NoteService();
+        BigDecimal difference = noteService.calculerDifferenceNote(conn, etudiantId, matiereId);
 
         // Find the first parameter that matches the rule
         String selectedSolution = null;
@@ -87,6 +77,12 @@ public class DeliberationService {
                             case ">":
                                 matches = difference.compareTo(seuil) > 0;
                                 break;
+                            case "<=":
+                                matches = difference.compareTo(seuil) <= 0;
+                                break;
+                            case ">=":
+                                matches = difference.compareTo(seuil) >= 0;
+                                break;
                             default:
                                 // unknown methode: ignore
                         }
@@ -109,25 +105,12 @@ public class DeliberationService {
         return finalValue;
     }
 
-    private int countCorrecteurs(Connection conn, int etudiantId, int matiereId) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(COUNT_CORRECTEURS_SQL)) {
-            stmt.setInt(1, etudiantId);
-            stmt.setInt(2, matiereId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("correcteur_count");
-                }
-                return 0;
-            }
-        }
-    }
-
     private void printNoteValues(Connection conn, int etudiantId, int matiereId) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement(READ_NOTE_VALUES_SQL)) {
             stmt.setInt(1, etudiantId);
             stmt.setInt(2, matiereId);
             try (ResultSet rs = stmt.executeQuery()) {
-                System.out.print("Notes utilisées pour la moyenne (etudiant=" + etudiantId + ", matiere=" + matiereId + "): [");
+                System.out.print("Notes utilisées pour la délibération (etudiant=" + etudiantId + ", matiere=" + matiereId + "): [");
                 boolean first = true;
                 while (rs.next()) {
                     if (!first) {

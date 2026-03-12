@@ -61,6 +61,8 @@ CREATE TABLE NoteFinale (
 
 DELETE FROM NoteFinale;
 
+TRUNCATE NoteFinale;
+
 INSERT INTO Solution (stringValeur, ref) VALUES
 ('Min', 'Minimal'),
 ('Max', 'Maximum'),
@@ -101,3 +103,27 @@ INSERT INTO Parametre (matiere_id, methode_id, solution_id, seuil) VALUES
 (3, 1, 2, 13.0), -- Informatique, Inferieur, Maximum
 (3, 2, 3, 14.0); -- Informatique, Superieur, Average
 
+
+INSERT INTO Etudiant (nom) VALUES
+('candidat1'),
+('candidat2');
+
+INSERT INTO Matiere (nom) VALUES
+('JAVA'),
+('PHP');
+
+INSERT INTO Prof (nom) VALUES
+('correcteur1'),
+('correcteur2'),
+('correcteur3');
+
+INSERT INTO Solution (stringValeur, ref) VALUES
+('Min', 'Minimal'),
+('Max', 'Maximum'),
+('Moyenne', 'Average');
+
+INSERT INTO Methode (stringValeur, ref) VALUES
+('<', 'Inferieur'),
+('>', 'Superieur'),
+('<=', 'Inferieur ou egal'),
+('>=', 'Superieur ou egal');
