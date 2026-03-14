@@ -69,6 +69,7 @@ public class DeliberationService {
         String selectedSolution = null;
         BigDecimal selectedSeuil = null;
         String selectedMethode = null;
+        boolean foundExactMatch = false;
 
         try (PreparedStatement stmt = conn.prepareStatement(READ_PARAMETRES_SQL)) {
             stmt.setInt(1, matiereId);
@@ -96,9 +97,25 @@ public class DeliberationService {
                         selectedSolution = solution;
                         selectedMethode = methode;
                         selectedSeuil = seuil;
+                        foundExactMatch = true;
+                        System.out.println("Correspondance exacte trouvée: " + methode + " " + seuil + " -> " + solution);
                         break;
                     }
                 }
+            }
+        }
+
+        // Si aucune correspondance exacte, utiliser la fonction de plus petite différence
+        if (!foundExactMatch) {
+            System.out.println("Aucune correspondance exacte trouvée, recherche du meilleur paramètre...");
+            ParametreSelector.ParametreDetail meilleurParametre = 
+                ParametreSelector.trouverMeilleurParametre(conn, matiereId, difference);
+            
+            if (meilleurParametre != null) {
+                selectedSolution = meilleurParametre.getSolution();
+                selectedMethode = meilleurParametre.getMethode();
+                selectedSeuil = meilleurParametre.getSeuil();
+                System.out.println("Meilleur paramètre sélectionné par différence minimale");
             }
         }
 

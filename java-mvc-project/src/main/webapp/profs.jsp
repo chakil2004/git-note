@@ -2,18 +2,21 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="java.util.List" %>
 <%@ page import="com.example.model.Prof" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8" />
-    <title>Gestion des profs</title>
-    <link rel="stylesheet" href="css/style.css" />
-</head>
-<body>
-<div class="container">
-<h1>Gestion des profs</h1>
+<%
+    // Définir le titre de la page
+    request.setAttribute("pageTitle", "Professeurs");
+%>
+<jsp:include page="includes/header.jsp"/>
 
-<p><a href="/profs/create">Ajouter un prof</a></p>
+<c:if test="${not empty message}">
+    <div class="alert alert-success">${message}</div>
+</c:if>
+
+<div class="page-actions">
+    <a href="${pageContext.request.contextPath}/profs/create" class="btn btn-primary">
+        + Ajouter un professeur
+    </a>
+</div>
 
 <table>
     <thead>
@@ -29,15 +32,29 @@
             <td>${prof.id}</td>
             <td>${prof.nom}</td>
             <td>
-                <a href="/profs/edit?id=${prof.id}">Modifier</a>
-                <a href="/profs/delete?id=${prof.id}" onclick="return confirm('Supprimer ?');">Supprimer</a>
+                <div class="table-actions">
+                    <a href="${pageContext.request.contextPath}/profs/edit?id=${prof.id}" class="btn btn-secondary">
+                        ✏️ Modifier
+                    </a>
+                    <a href="${pageContext.request.contextPath}/profs/delete?id=${prof.id}" 
+                       class="btn btn-danger" 
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce professeur ?');">
+                        🗑️ Supprimer
+                    </a>
+                </div>
             </td>
         </tr>
     </c:forEach>
     </tbody>
 </table>
 
-<p><a href="index.jsp">Retour</a></p>
-</div>
-</body>
-</html>
+<c:if test="${empty profs}">
+    <div class="text-center mt-20">
+        <p class="text-muted">Aucun professeur trouvé.</p>
+        <a href="${pageContext.request.contextPath}/profs/create" class="btn btn-primary">
+            + Ajouter le premier professeur
+        </a>
+    </div>
+</c:if>
+
+<jsp:include page="includes/footer.jsp"/>

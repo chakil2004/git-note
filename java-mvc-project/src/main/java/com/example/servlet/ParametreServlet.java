@@ -79,7 +79,16 @@ public class ParametreServlet extends HttpServlet {
         req.getRequestDispatcher("/parametres.jsp").forward(req, resp);
     }
 
-    private void showForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void showForm(HttpServletRequest req, HttpServletResponse resp) throws SQLException, ServletException, IOException {
+        // Charger les listes pour les menus déroulants
+        List<Matiere> matieres = matiereService.listAll();
+        List<Methode> methodes = methodeService.listAll();
+        List<Solution> solutions = solutionService.listAll();
+        
+        req.setAttribute("matieres", matieres);
+        req.setAttribute("methodes", methodes);
+        req.setAttribute("solutions", solutions);
+        
         req.getRequestDispatcher("/editParametre.jsp").forward(req, resp);
     }
 
@@ -95,6 +104,16 @@ public class ParametreServlet extends HttpServlet {
             return;
         }
         req.setAttribute("parametre", item);
+        
+        // Charger les listes pour les menus déroulants
+        List<Matiere> matieres = matiereService.listAll();
+        List<Methode> methodes = methodeService.listAll();
+        List<Solution> solutions = solutionService.listAll();
+        
+        req.setAttribute("matieres", matieres);
+        req.setAttribute("methodes", methodes);
+        req.setAttribute("solutions", solutions);
+        
         req.getRequestDispatcher("/editParametre.jsp").forward(req, resp);
     }
 

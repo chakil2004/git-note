@@ -1,7 +1,13 @@
 package com.example.servlet;
 
 import com.example.model.Note;
+import com.example.model.Etudiant;
+import com.example.model.Prof;
+import com.example.model.Matiere;
 import com.example.service.NoteCrudService;
+import com.example.service.EtudiantService;
+import com.example.service.ProfService;
+import com.example.service.MatiereService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,6 +22,9 @@ import java.util.List;
 public class NoteServlet extends HttpServlet {
 
     private final NoteCrudService service = new NoteCrudService();
+    private final EtudiantService etudiantService = new EtudiantService();
+    private final ProfService profService = new ProfService();
+    private final MatiereService matiereService = new MatiereService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -64,7 +73,16 @@ public class NoteServlet extends HttpServlet {
         req.getRequestDispatcher("/notes.jsp").forward(req, resp);
     }
 
-    private void showForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void showForm(HttpServletRequest req, HttpServletResponse resp) throws SQLException, ServletException, IOException {
+        // Charger les listes pour les menus déroulants
+        List<Etudiant> etudiants = etudiantService.listAll();
+        List<Prof> profs = profService.listAll();
+        List<Matiere> matieres = matiereService.listAll();
+        
+        req.setAttribute("etudiants", etudiants);
+        req.setAttribute("profs", profs);
+        req.setAttribute("matieres", matieres);
+        
         req.getRequestDispatcher("/editNote.jsp").forward(req, resp);
     }
 
@@ -82,6 +100,16 @@ public class NoteServlet extends HttpServlet {
             return;
         }
         req.setAttribute("note", item);
+        
+        // Charger les listes pour les menus déroulants
+        List<Etudiant> etudiants = etudiantService.listAll();
+        List<Prof> profs = profService.listAll();
+        List<Matiere> matieres = matiereService.listAll();
+        
+        req.setAttribute("etudiants", etudiants);
+        req.setAttribute("profs", profs);
+        req.setAttribute("matieres", matieres);
+        
         req.getRequestDispatcher("/editNote.jsp").forward(req, resp);
     }
 
