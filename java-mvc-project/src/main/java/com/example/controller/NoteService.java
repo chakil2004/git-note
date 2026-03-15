@@ -125,7 +125,38 @@ public class NoteService {
                     System.out.println("  |" + notes.get(i) + " - " + notes.get(j) + "| = " + ecart);
                 }
             }
-            System.out.println("Vérification manuelle du total: " + totalEcart);
+            
+            // Récupérer le résultat SQL pour comparaison
+            BigDecimal sqlResult = BigDecimal.ZERO;
+            String sqlCheck = "SELECT SUM(ABS(n1.valeur - n2.valeur)) AS sql_total " +
+                             "FROM Note n1 " +
+                             "JOIN Note n2 ON n1.etudiant_id = n2.etudiant_id " +
+                             "AND n1.matiere_id = n2.matiere_id " +
+                             "AND n1.prof_id < n2.prof_id " +
+                             "WHERE n1.etudiant_id = ? AND n1.matiere_id = ?";
+            
+            try (PreparedStatement checkStmt = conn.prepareStatement(sqlCheck)) {
+                checkStmt.setInt(1, etudiantId);
+                checkStmt.setInt(2, matiereId);
+                try (ResultSet checkRs = checkStmt.executeQuery()) {
+                    if (checkRs.next()) {
+                        sqlResult = checkRs.getBigDecimal("sql_total");
+                    }
+                }
+            }
+            
+            // Comparaison
+            System.out.println("Vérification manuelle du total (Java): " + totalEcart);
+            System.out.println("Résultat de la requête SQL: " + sqlResult);
+            
+            // Convertir pour comparaison précise
+            BigDecimal javaResult = BigDecimal.valueOf(totalEcart);
+            if (javaResult.compareTo(sqlResult) == 0) {
+                System.out.println("✅ COHÉRENCE : Java et SQL donnent le même résultat");
+            } else {
+                System.out.println("⚠️ INHÉRENCE DÉTECTÉE !");
+                System.out.println("   Différence : " + javaResult.subtract(sqlResult));
+            }
         }
     }
 
