@@ -3,63 +3,11 @@
 <%@ page import="com.example.model.Etudiant" %>
 <%@ page import="com.example.model.Matiere" %>
 <%@ page import="com.example.model.NoteFinale" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8" />
-    <title>Délibération</title>
-    <link rel="stylesheet" href="css/style.css" />
-    <style>
-        .form-section {
-            background: #f5f5f5;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 5px;
-        }
-        .form-group {
-            margin: 10px 0;
-        }
-        label {
-            display: inline-block;
-            width: 100px;
-            font-weight: bold;
-        }
-        select, button {
-            padding: 8px;
-            margin: 5px;
-        }
-        button {
-            background: #007cba;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #005a87;
-        }
-        .message {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 3px;
-        }
-        .success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-        .error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-        .results-section {
-            margin-top: 30px;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-<h1>Délibération des Notes</h1>
+<%
+    // Définir le titre de la page
+    request.setAttribute("pageTitle", "Délibération");
+%>
+<jsp:include page="includes/header.jsp"/>
 
 <%
     // Récupérer les listes depuis la requête
@@ -71,18 +19,20 @@
 %>
 
 <% if (message != null) { %>
-    <div class="message success"><%= message %></div>
+    <div class="alert alert-success"><%= message %></div>
 <% } %>
 
 <% if (error != null) { %>
-    <div class="message error"><%= error %></div>
+    <div class="alert alert-error"><%= error %></div>
 <% } %>
 
-<div class="form-section">
-    <h2>Lancer une délibération</h2>
-    <form method="post" action="deliberation">
+<div class="deliberation-form">
+    <h2>🎯 Lancer une délibération</h2>
+    <p class="text-muted">Sélectionnez un étudiant et une matière pour calculer la note finale</p>
+    
+    <form method="post" action="${pageContext.request.contextPath}/deliberation">
         <div class="form-group">
-            <label for="etudiantId">Étudiant:</label>
+            <label for="etudiantId">Étudiant</label>
             <select name="etudiantId" id="etudiantId" required>
                 <option value="">-- Sélectionner un étudiant --</option>
                 <% if (etudiants != null) {
@@ -94,7 +44,7 @@
         </div>
         
         <div class="form-group">
-            <label for="matiereId">Matière:</label>
+            <label for="matiereId">Matière</label>
             <select name="matiereId" id="matiereId" required>
                 <option value="">-- Sélectionner une matière --</option>
                 <% if (matieres != null) {
@@ -105,17 +55,19 @@
             </select>
         </div>
         
-        <div class="form-group">
-            <button type="submit">Lancer la délibération</button>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                🚀 Lancer la délibération
+            </button>
         </div>
     </form>
 </div>
 
-<div class="results-section">
-    <h2>Notes finales existantes</h2>
+<div class="deliberation-results">
+    <h2>📊 Notes finales existantes</h2>
     
     <% if (notesFinales != null && !notesFinales.isEmpty()) { %>
-        <table border="1" cellpadding="6" cellspacing="0">
+        <table>
             <thead>
             <tr>
                 <th>Étudiant</th>
@@ -151,7 +103,9 @@
                 <tr>
                     <td><%= etudiantNom %></td>
                     <td><%= matiereNom %></td>
-                    <td><%= note.getValeur() %></td>
+                    <td>
+                        <span class="badge-final-note"><%= note.getValeur() %></span>
+                    </td>
                 </tr>
             <%
                 }
@@ -159,11 +113,11 @@
             </tbody>
         </table>
     <% } else { %>
-        <p>Aucune note finale n'a encore été calculée.</p>
+        <div class="text-center mt-20">
+            <p class="text-muted">Aucune note finale n'a encore été calculée.</p>
+            <p class="text-muted">Lancez votre première délibération pour voir les résultats ici.</p>
+        </div>
     <% } %>
 </div>
 
-<p><a href="index.jsp">Retour à l'accueil</a></p>
-</div>
-</body>
-</html>
+<jsp:include page="includes/footer.jsp"/>

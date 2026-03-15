@@ -52,18 +52,9 @@ public class DeliberationService {
             return null;
         }
 
-        // Print all note values used to calculate the average (for debugging / visibility)
-        printNoteValues(conn, etudiantId, matiereId);
-
-        // If the student has exactly 2 correcteurs, use "Moyenne" regardless of params.
-        int correcteursCount = countCorrecteurs(conn, etudiantId, matiereId);
-        if (correcteursCount == 2) {
-            BigDecimal valeur = stats.avg;
-            upsertNoteFinale(conn, etudiantId, matiereId, valeur);
-            return valeur;
-        }
-
-        BigDecimal difference = stats.max.subtract(stats.min);
+        // Use detailed difference calculation from NoteService
+        NoteService noteService = new NoteService();
+        BigDecimal difference = noteService.calculerDifferenceNote(conn, etudiantId, matiereId);
 
         // Find the first parameter that matches the rule
         String selectedSolution = null;

@@ -18,8 +18,12 @@ public class NoteService {
             "WHERE etudiant_id = ? AND matiere_id = ?";
 
     private static final String NOTE_DIFFERENCE_SQL =
-            "SELECT MAX(valeur) - MIN(valeur) AS note_difference FROM Note " +
-            "WHERE etudiant_id = ? AND matiere_id = ?";
+            "SELECT SUM(ABS(n1.valeur - n2.valeur)) AS note_difference " +
+            "FROM Note n1 " +
+            "JOIN Note n2 ON n1.etudiant_id = n2.etudiant_id " +
+            "AND n1.matiere_id = n2.matiere_id " +
+            "AND n1.prof_id < n2.prof_id " +
+            "WHERE n1.etudiant_id = ? AND n1.matiere_id = ?";
 
     private static final String NOTE_FINALE_SQL =
             "SELECT valeur FROM NoteFinale WHERE etudiant_id = ? AND matiere_id = ?";
@@ -47,13 +51,15 @@ public class NoteService {
     }
 
     /**
-     * Calculate the difference between the maximum and minimum note for a student
+     * Calculate the sum of differences between all pairs of notes for a student
      * in a specific subject.
+     *
+     * Formula: |note1 - note2| + |note1 - note3| + |note2 - note3| + ...
      *
      * @param conn       JDBC connection (must be open)
      * @param etudiantId student id
      * @param matiereId  subject id
-     * @return difference between max and min note (0 if no notes)
+     * @return sum of all differences between note pairs (0 if no notes)
      * @throws SQLException on SQL error
      */
     public BigDecimal calculerDifferenceNote(Connection conn, int etudiantId, int matiereId) throws SQLException {
@@ -63,10 +69,63 @@ public class NoteService {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     BigDecimal diff = rs.getBigDecimal("note_difference");
-                    return diff == null ? BigDecimal.ZERO : diff;
+                    BigDecimal result = diff == null ? BigDecimal.ZERO : diff;
+                    
+                    // Afficher les détails dans le terminal
+                    System.out.println("=== CALCUL ÉCART NOTES ===");
+                    System.out.println("Étudiant ID: " + etudiantId);
+                    System.out.println("Matière ID: " + matiereId);
+                    System.out.println("Écart total calculé: " + result);
+                    
+                    // Afficher les notes individuelles pour vérification
+                    afficherNotesIndividuelles(conn, etudiantId, matiereId);
+                    System.out.println("========================");
+                    
+                    return result;
                 }
                 return BigDecimal.ZERO;
             }
+        }
+    }
+
+    /**
+     * Affiche les notes individuelles et les paires avec leurs écarts
+     */
+    private void afficherNotesIndividuelles(Connection conn, int etudiantId, int matiereId) throws SQLException {
+        String sql = "SELECT prof_id, valeur FROM Note WHERE etudiant_id = ? AND matiere_id = ? ORDER BY prof_id";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, etudiantId);
+            stmt.setInt(2, matiereId);
+            
+            // Récupérer toutes les notes
+            java.util.List<java.math.BigDecimal> notes = new java.util.ArrayList<>();
+            java.util.List<Integer> profIds = new java.util.ArrayList<>();
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    profIds.add(rs.getInt("prof_id"));
+                    notes.add(rs.getBigDecimal("valeur"));
+                }
+            }
+            
+            // Afficher les notes individuelles
+            System.out.println("Notes individuelles:");
+            for (int i = 0; i < notes.size(); i++) {
+                System.out.println("  Prof " + profIds.get(i) + ": " + notes.get(i));
+            }
+            
+            // Calculer et afficher les écarts par paire
+            System.out.println("Écarts par paire:");
+            double totalEcart = 0;
+            for (int i = 0; i < notes.size(); i++) {
+                for (int j = i + 1; j < notes.size(); j++) {
+                    double ecart = Math.abs(notes.get(i).doubleValue() - notes.get(j).doubleValue());
+                    totalEcart += ecart;
+                    System.out.println("  |" + notes.get(i) + " - " + notes.get(j) + "| = " + ecart);
+                }
+            }
+            System.out.println("Vérification manuelle du total: " + totalEcart);
         }
     }
 

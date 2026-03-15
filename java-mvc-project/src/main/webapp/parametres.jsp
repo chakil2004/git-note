@@ -6,16 +6,11 @@
 <%@ page import="com.example.model.Methode" %>
 <%@ page import="com.example.model.Solution" %>
 <%@ page import="java.util.Collections" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8" />
-    <title>Gestion des paramètres</title>
-    <link rel="stylesheet" href="css/style.css" />
-</head>
-<body>
-<div class="container">
-<h1>Gestion des paramètres</h1>
+<%
+    // Définir le titre de la page
+    request.setAttribute("pageTitle", "Paramètres");
+%>
+<jsp:include page="includes/header.jsp"/>
 
 <%!
     // Fonction pour trouver le nom d'une matière par son ID
@@ -60,10 +55,16 @@
 %>
 
 <c:if test="${not empty message}">
-    <div style="padding:10px; border:1px solid #0a0; background:#dfd;">${message}</div>
+    <div class="alert alert-success">${message}</div>
 </c:if>
 
-<table border="1" cellpadding="6" cellspacing="0">
+<div class="page-actions">
+    <a href="${pageContext.request.contextPath}/parametres/create" class="btn btn-primary">
+        ➕ Ajouter un paramètre
+    </a>
+</div>
+
+<table>
     <thead>
     <tr>
         <th>ID</th>
@@ -83,12 +84,26 @@
         <tr>
             <td><%= param.getId() %></td>
             <td><%= findMatiereName(param.getMatiereId(), matieres) %></td>
-            <td><%= findMethodeName(param.getMethodeId(), methodes) %></td>
-            <td><%= findSolutionName(param.getSolutionId(), solutions) %></td>
-            <td><%= param.getSeuil() %></td>
             <td>
-                <a href="parametres/edit?id=<%= param.getId() %>">Modifier</a>
-                <a href="parametres/delete?id=<%= param.getId() %>" onclick="return confirm('Supprimer ?');">Supprimer</a>
+                <span class="badge-method"><%= findMethodeName(param.getMethodeId(), methodes) %></span>
+            </td>
+            <td>
+                <span class="badge-solution"><%= findSolutionName(param.getSolutionId(), solutions) %></span>
+            </td>
+            <td>
+                <span class="badge-seuil"><%= param.getSeuil() %></span>
+            </td>
+            <td>
+                <div class="table-actions">
+                    <a href="${pageContext.request.contextPath}/parametres/edit?id=<%= param.getId() %>" class="btn btn-secondary">
+                        ✏️ Modifier
+                    </a>
+                    <a href="${pageContext.request.contextPath}/parametres/delete?id=<%= param.getId() %>" 
+                       class="btn btn-danger" 
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce paramètre ?');">
+                        🗑️ Supprimer
+                    </a>
+                </div>
             </td>
         </tr>
 <%
@@ -98,10 +113,17 @@
     </tbody>
 </table>
 
-<h2>Ajouter un paramètre</h2>
-<p><a href="parametres/create">Ajouter un paramètre</a></p>
+<%
+if (parametres == null || parametres.isEmpty()) {
+%>
+    <div class="text-center mt-20">
+        <p class="text-muted">Aucun paramètre trouvé.</p>
+        <a href="${pageContext.request.contextPath}/parametres/create" class="btn btn-primary">
+            ➕ Ajouter le premier paramètre
+        </a>
+    </div>
+<%
+}
+%>
 
-<p><a href="index.jsp">Retour</a></p>
-</div>
-</body>
-</html>
+<jsp:include page="includes/footer.jsp"/>

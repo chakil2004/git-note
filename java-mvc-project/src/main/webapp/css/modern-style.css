@@ -206,6 +206,29 @@ select option {
   color: #ffffff;
 }
 
+/* Badge for seuil */
+.badge-seuil {
+  display: inline-block;
+  background: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Badge for final notes */
+.badge-final-note {
+  display: inline-block;
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: #ffffff;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
 /* Buttons */
 .btn {
   display: inline-block;
