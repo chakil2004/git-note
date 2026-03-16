@@ -2,27 +2,28 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="java.util.List" %>
 <%@ page import="com.example.model.Note" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8" />
-    <title>Gestion des notes</title>
-    <link rel="stylesheet" href="css/style.css" />
-</head>
-<body>
-<div class="container">
-<h1>Gestion des notes</h1>
+<%
+    // Définir le titre de la page
+    request.setAttribute("pageTitle", "Notes");
+%>
+<jsp:include page="includes/header.jsp"/>
 
 <c:if test="${not empty message}">
-    <div style="padding:10px; border:1px solid #0a0; background:#dfd;">${message}</div>
+    <div class="alert alert-success">${message}</div>
 </c:if>
 
-<table border="1" cellpadding="6" cellspacing="0">
+<div class="page-actions">
+    <a href="${pageContext.request.contextPath}/notes/create" class="btn btn-primary">
+        + Ajouter une note
+    </a>
+</div>
+
+<table>
     <thead>
     <tr>
-        <th>Etudiant ID</th>
-        <th>Prof ID</th>
-        <th>Matière ID</th>
+        <th>Étudiant</th>
+        <th>Professeur</th>
+        <th>Matière</th>
         <th>Valeur</th>
         <th>Actions</th>
     </tr>
@@ -33,20 +34,34 @@
             <td>${note.etudiantId}</td>
             <td>${note.profId}</td>
             <td>${note.matiereId}</td>
-            <td>${note.valeur}</td>
             <td>
-                <a href="${pageContext.request.contextPath}/notes/edit?etudiantId=${note.etudiantId}&profId=${note.profId}&matiereId=${note.matiereId}">Modifier</a>
-                <a href="${pageContext.request.contextPath}/notes/delete?etudiantId=${note.etudiantId}&profId=${note.profId}&matiereId=${note.matiereId}" onclick="return confirm('Supprimer ?');">Supprimer</a>
+                <span class="badge-value">${note.valeur}</span>
+            </td>
+            <td>
+                <div class="table-actions">
+                    <a href="${pageContext.request.contextPath}/notes/edit?etudiantId=${note.etudiantId}&profId=${note.profId}&matiereId=${note.matiereId}" 
+                       class="btn btn-secondary">
+                        ✏️ Modifier
+                    </a>
+                    <a href="${pageContext.request.contextPath}/notes/delete?etudiantId=${note.etudiantId}&profId=${note.profId}&matiereId=${note.matiereId}" 
+                       class="btn btn-danger" 
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette note ?');">
+                        🗑️ Supprimer
+                    </a>
+                </div>
             </td>
         </tr>
     </c:forEach>
     </tbody>
 </table>
 
-<h2>Ajouter une note</h2>
-<p><a href="${pageContext.request.contextPath}/notes/create">Ajouter une note</a></p>
+<c:if test="${empty notes}">
+    <div class="text-center mt-20">
+        <p class="text-muted">Aucune note trouvée.</p>
+        <a href="${pageContext.request.contextPath}/notes/create" class="btn btn-primary">
+            + Ajouter la première note
+        </a>
+    </div>
+</c:if>
 
-<p><a href="index.jsp">Retour</a></p>
-</div>
-</body>
-</html>
+<jsp:include page="includes/footer.jsp"/>

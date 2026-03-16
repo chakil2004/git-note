@@ -1,26 +1,64 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8" />
-    <title>Deliberation Notes - Accueil</title>
-    <link rel="stylesheet" href="css/style.css" />
-</head>
-<body>
-<div class="container">
-    <h1>Deliberation Notes</h1>
-    <div class="nav">
-        <a href="etudiants">Étudiants</a>
-        <a href="profs">Profs</a>
-        <a href="matieres">Matières</a>
-        <a href="notes">Notes</a>
-        <a href="solutions">Solutions</a>
-        <a href="methodes">Méthodes</a>
-        <a href="parametres">Paramètres</a>
-        <a href="noteFinale">Notes finales</a>
-        <a href="deliberation">Délibération</a>
+<%@ page import="java.util.List" %>
+<%@ page import="com.example.model.NoteFinale" %>
+<%@ page import="com.example.controller.NoteService" %>
+<%@ page import="java.sql.Connection" %>
+<%@ page import="com.example.config.DatabaseConfig" %>
+<%
+    // Définir le titre de la page
+    request.setAttribute("pageTitle", "Accueil");
+    
+    // Récupérer quelques statistiques
+    int totalEtudiants = 0;
+    int totalNotes = 0;
+    int totalParametres = 0;
+    
+    try (Connection conn = DatabaseConfig.getConnection()) {
+        // Compter les étudiants
+        java.sql.PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) as total FROM Etudiant");
+        java.sql.ResultSet rs = stmt.executeQuery();
+        if (rs.next()) totalEtudiants = rs.getInt("total");
+        
+        // Compter les notes
+        stmt = conn.prepareStatement("SELECT COUNT(*) as total FROM Note");
+        rs = stmt.executeQuery();
+        if (rs.next()) totalNotes = rs.getInt("total");
+        
+        // Compter les paramètres
+        stmt = conn.prepareStatement("SELECT COUNT(*) as total FROM Parametre");
+        rs = stmt.executeQuery();
+        if (rs.next()) totalParametres = rs.getInt("total");
+        
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+%>
+<jsp:include page="includes/header.jsp"/>
+
+<div class="dashboard">
+    <h1>Bienvenue dans le Système de Délibération</h1>
+    <p class="text-muted">Gérez les étudiants, les notes et les paramètres de délibération</p>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-number">${totalEtudiants}</div>
+            <div class="stat-label">Étudiants</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-number">${totalNotes}</div>
+            <div class="stat-label">Notes</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">⚙️</div>
+            <div class="stat-number">${totalParametres}</div>
+            <div class="stat-label">Paramètres</div>
+        </div>
     </div>
-    <p>Utilise le menu pour gérer les entités ou voir les notes finales.</p>
-</div>
-</body>
-</html>
+    
+
+
+<jsp:include page="includes/footer.jsp"/>

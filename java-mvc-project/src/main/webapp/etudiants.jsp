@@ -2,28 +2,23 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="java.util.List" %>
 <%@ page import="com.example.model.Etudiant" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8" />
-    <title>Gestion des étudiants</title>
-    <link rel="stylesheet" href="css/style.css" />
-</head>
-<body>
-<div class="container">
-<h1>Gestion des étudiants</h1>
-
-<%--
-  Attendu :
-  - attribut request "etudiants" contient List<Etudiant>
-  - attribut request "message" contient message de statut
---%>
+<%
+    // Définir le titre de la page
+    request.setAttribute("pageTitle", "Étudiants");
+%>
+<jsp:include page="includes/header.jsp"/>
 
 <c:if test="${not empty message}">
-    <div style="padding:10px; border:1px solid #0a0; background:#dfd;">${message}</div>
+    <div class="alert alert-success">${message}</div>
 </c:if>
 
-<table border="1" cellpadding="6" cellspacing="0">
+<div class="page-actions">
+    <a href="${pageContext.request.contextPath}/etudiants/create" class="btn btn-primary">
+        + Ajouter un étudiant
+    </a>
+</div>
+
+<table>
     <thead>
     <tr>
         <th>ID</th>
@@ -37,18 +32,29 @@
             <td>${etudiant.id}</td>
             <td>${etudiant.nom}</td>
             <td>
-                <a href="etudiants/edit?id=${etudiant.id}">Modifier</a>
-                <a href="etudiants/delete?id=${etudiant.id}" onclick="return confirm('Supprimer ?');">Supprimer</a>
+                <div class="table-actions">
+                    <a href="${pageContext.request.contextPath}/etudiants/edit?id=${etudiant.id}" class="btn btn-secondary">
+                        ✏️ Modifier
+                    </a>
+                    <a href="${pageContext.request.contextPath}/etudiants/delete?id=${etudiant.id}" 
+                       class="btn btn-danger" 
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?');">
+                        🗑️ Supprimer
+                    </a>
+                </div>
             </td>
         </tr>
     </c:forEach>
     </tbody>
 </table>
 
-<h2>Ajouter un étudiant</h2>
-<p><a href="etudiants/create">Ajouter un étudiant</a></p>
+<c:if test="${empty etudiants}">
+    <div class="text-center mt-20">
+        <p class="text-muted">Aucun étudiant trouvé.</p>
+        <a href="${pageContext.request.contextPath}/etudiants/create" class="btn btn-primary">
+            + Ajouter le premier étudiant
+        </a>
+    </div>
+</c:if>
 
-<p><a href="index.jsp">Retour</a></p>
-</div>
-</body>
-</html>
+<jsp:include page="includes/footer.jsp"/>
