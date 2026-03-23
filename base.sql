@@ -60,6 +60,7 @@ CREATE TABLE NoteFinale (
 );
 
 DELETE FROM NoteFinale;
+TRUNCATE TABLE NoteFinale;
 
 INSERT INTO Solution (stringValeur, ref) VALUES
 ('Min', 'Minimal'),
@@ -101,3 +102,7 @@ INSERT INTO Parametre (matiere_id, methode_id, solution_id, seuil) VALUES
 (3, 1, 2, 13.0), -- Informatique, Inferieur, Maximum
 (3, 2, 3, 14.0); -- Informatique, Superieur, Average
 
+INSERT INTO Note (etudiant_id, prof_id, matiere_id, valeur) VALUES
+(1,1,3,10),
+(1,2,3,11),
+(1,3,3,11.75);

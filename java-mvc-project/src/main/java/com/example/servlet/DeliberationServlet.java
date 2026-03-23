@@ -1,7 +1,7 @@
 package com.example.servlet;
 
 import com.example.config.DatabaseConfig;
-import com.example.controller.DeliberationService;
+import com.example.service.DeliberationService;
 import com.example.model.Etudiant;
 import com.example.model.Matiere;
 import com.example.model.NoteFinale;

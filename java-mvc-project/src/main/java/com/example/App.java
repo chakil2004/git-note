@@ -1,7 +1,7 @@
 // package com.example;
 
 // import com.example.config.DatabaseConfig;
-// import com.example.controller.NoteService;
+// import com.example.service.NoteService;
 
 // import java.math.BigDecimal;
 // import java.sql.Connection;
