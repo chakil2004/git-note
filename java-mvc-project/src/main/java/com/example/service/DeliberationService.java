@@ -1,4 +1,4 @@
-package com.example.controller;
+package com.example.service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

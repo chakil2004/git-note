@@ -37,3 +37,27 @@ fonction
 fonction qui compte le nombre de correcteur d e correcteur d un eleve sur une matier donne
 fonction qui calcule la differance des note d un eleve pour une matier donne
 fonction qui fait la deliberation
+
+
+lava drano(forage)
+
+- besoi(demanede de forage)
+    liex 
+    personne nom
+
+- etude
+    - devis
+    - etat (accepte ou reffuser)
+
+- validation(cliant)
+
+- possibilite forage
+    oui ou non
+
+devis forage
+
+forage
+etape
+    - debut
+    - recuperation eau
+    - test sanitaire eau

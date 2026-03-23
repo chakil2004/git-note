@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="com.example.model.NoteFinale" %>
-<%@ page import="com.example.controller.NoteService" %>
+<%@ page import="com.example.service.NoteService" %>
 <%@ page import="java.sql.Connection" %>
 <%@ page import="com.example.config.DatabaseConfig" %>
 <%

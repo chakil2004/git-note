@@ -1,4 +1,4 @@
-package com.example.controller;
+package com.example.service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,6 +14,10 @@ import java.util.List;
  */
 public class ParametreSelector {
 
+/**
+ * Récupérer tous les paramètres de délibération disponibles pour une matière donnée, 
+ * avec leurs informations complètes.
+ */
     private static final String READ_PARAMETRES_WITH_DETAILS_SQL =
             "SELECT p.id, p.seuil, m.stringValeur AS methode, s.stringValeur AS solution, " +
             "m.ref AS methode_ref, s.ref AS solution_ref " +

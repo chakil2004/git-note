@@ -1,6 +1,6 @@
-package com.example.controller;
+package com.example.service;
 
-import com.example.controller.DeliberationService;
+import com.example.service.DeliberationService;
 
 import java.math.BigDecimal;
 import java.sql.Connection;

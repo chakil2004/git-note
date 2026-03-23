@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ETU003653 - Système de Délibération</title>
+
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/modern-style.css">
 </head>
 <body>
@@ -13,7 +14,7 @@
         <div class="header-content">
             <div class="logo">
                 <span class="logo-dot"></span>
-                <span>ETU003653</span>
+                <span style="font-size: 100px; font-weight: bold;"> ETU003653</span>
             </div>
             <nav class="nav">
                 <a href="${pageContext.request.contextPath}/" class="${pageTitle == 'Accueil' ? 'active' : ''}">Accueil</a>
