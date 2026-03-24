@@ -1,12 +1,26 @@
 package com.example.model;
 
+import jakarta.persistence.*;
+import java.util.List;
+
 /**
  * Modèle pour la table client
  */
+@Entity
+@Table(name = "client")
 public class Client {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    
+    @Column(name = "nom")
     private String nom;
+    
+    @Column(name = "contact")
     private String contact;
+    
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Demande> demandes;
     
     public Client() {}
     
@@ -39,6 +53,14 @@ public class Client {
     
     public void setContact(String contact) {
         this.contact = contact;
+    }
+    
+    public List<Demande> getDemandes() {
+        return demandes;
+    }
+    
+    public void setDemandes(List<Demande> demandes) {
+        this.demandes = demandes;
     }
     
     @Override

@@ -1,94 +1,74 @@
 package com.example.controller;
 
-import com.example.config.DatabaseConfig;
 import com.example.model.TypeDevis;
 import com.example.service.TypeDevisService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
  * Controller pour gérer les types de devis
  */
-@WebServlet("/typeDevis")
-public class TypeDevisController extends HttpServlet {
+@Controller
+public class TypeDevisController {
     
+    @Autowired
     private TypeDevisService typeDevisService;
     
-    @Override
-    public void init() {
-        typeDevisService = new TypeDevisService();
+    @GetMapping("/typeDevis")
+    public String listTypes(@RequestParam(value = "action", required = false) String action,
+                            @RequestParam(value = "id", required = false) Integer id,
+                            Model model,
+                            RedirectAttributes redirectAttributes) {
+        
+        if ("edit".equals(action) && id != null) {
+            TypeDevis type = typeDevisService.getTypeById(id);
+            if (type != null) {
+                model.addAttribute("type", type);
+                return "typeDevis-form";
+            }
+        } else if ("delete".equals(action) && id != null) {
+            typeDevisService.deleteType(id);
+            redirectAttributes.addFlashAttribute("message", "Type supprimé avec succès");
+            return "redirect:/typeDevis";
+        } else {
+            List<TypeDevis> types = typeDevisService.getAllTypes();
+            model.addAttribute("types", types);
+            model.addAttribute("pageTitle", "Types Devis");
+            return "typeDevis";
+        }
+        
+        return "redirect:/typeDevis";
     }
     
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
+    @PostMapping("/typeDevis")
+    public String handleType(@RequestParam(value = "action") String action,
+                            @RequestParam(value = "id", required = false) Integer id,
+                            @RequestParam("libelle") String libelle,
+                            RedirectAttributes redirectAttributes) {
         
-        try {
-            String action = request.getParameter("action");
+        if ("add".equals(action)) {
+            TypeDevis type = new TypeDevis();
+            type.setLibelle(libelle);
             
-            if ("add".equals(action) || "edit".equals(action)) {
-                // Afficher le formulaire
-                if ("edit".equals(action)) {
-                    int id = Integer.parseInt(request.getParameter("id"));
-                    try (Connection conn = DatabaseConfig.getConnection()) {
-                        TypeDevis type = typeDevisService.getTypeById(conn, id);
-                        request.setAttribute("type", type);
-                    }
-                }
-                request.getRequestDispatcher("typeDevis-form.jsp").forward(request, response);
-            } else if ("delete".equals(action)) {
-                int id = Integer.parseInt(request.getParameter("id"));
-                try (Connection conn = DatabaseConfig.getConnection()) {
-                    typeDevisService.deleteType(conn, id);
-                }
-                response.sendRedirect("typeDevis");
-            } else {
-                // Afficher la liste des types de devis
-                try (Connection conn = DatabaseConfig.getConnection()) {
-                    List<TypeDevis> types = typeDevisService.getAllTypes(conn);
-                    request.setAttribute("types", types);
-                }
-                request.getRequestDispatcher("typeDevis.jsp").forward(request, response);
-            }
-        } catch (SQLException e) {
-            throw new ServletException("Database error", e);
+            typeDevisService.createType(type);
+            redirectAttributes.addFlashAttribute("message", "Type créé avec succès");
+            
+        } else if ("update".equals(action) && id != null) {
+            TypeDevis type = new TypeDevis();
+            type.setId(id);
+            type.setLibelle(libelle);
+            
+            typeDevisService.updateType(type);
+            redirectAttributes.addFlashAttribute("message", "Type mis à jour avec succès");
         }
-    }
-    
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
         
-        String action = request.getParameter("action");
-        
-        try (Connection conn = DatabaseConfig.getConnection()) {
-            if ("add".equals(action)) {
-                TypeDevis type = new TypeDevis();
-                type.setLibelle(request.getParameter("libelle"));
-                
-                typeDevisService.createType(conn, type);
-                
-            } else if ("update".equals(action)) {
-                TypeDevis type = new TypeDevis();
-                type.setId(Integer.parseInt(request.getParameter("id")));
-                type.setLibelle(request.getParameter("libelle"));
-                
-                typeDevisService.updateType(conn, type);
-            }
-            
-            response.sendRedirect(request.getContextPath() + "/typeDevis");
-            
-        } catch (SQLException e) {
-            throw new ServletException("Erreur lors de l'opération", e);
-        }
+        return "redirect:/typeDevis";
     }
 }

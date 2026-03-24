@@ -2,44 +2,35 @@ package com.example.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
- * Modèle pour la table devis
+ * Modèle pour la table demande_statut
  */
 @Entity
-@Table(name = "devis")
-public class Devis {
+@Table(name = "demande_statut")
+public class DemandeStatut {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "demande_id")
     private Demande demande;
     
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "type_devis_id")
-    private TypeDevis typeDevis;
-    
-    @Column(name = "date_devis")
-    private LocalDateTime dateDevis;
-    
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "statut_id")
+    @JoinColumn(name = "statut")
     private Statut statut;
     
-    @OneToMany(mappedBy = "devis", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<DetailDevis> details;
+    @Column(name = "date")
+    private LocalDateTime date;
     
-    public Devis() {}
+    public DemandeStatut() {}
     
-    public Devis(int id, Demande demande, TypeDevis typeDevis, LocalDateTime dateDevis, Statut statut) {
+    public DemandeStatut(int id, Demande demande, Statut statut, LocalDateTime date) {
         this.id = id;
         this.demande = demande;
-        this.typeDevis = typeDevis;
-        this.dateDevis = dateDevis;
         this.statut = statut;
+        this.date = date;
     }
     
     // Getters and Setters
@@ -59,14 +50,6 @@ public class Devis {
         this.demande = demande;
     }
     
-    public TypeDevis getTypeDevis() {
-        return typeDevis;
-    }
-    
-    public void setTypeDevis(TypeDevis typeDevis) {
-        this.typeDevis = typeDevis;
-    }
-    
     // Pour compatibilité avec le code existant
     public int getDemandeId() {
         return demande != null ? demande.getId() : 0;
@@ -74,22 +57,6 @@ public class Devis {
     
     public void setDemandeId(int demandeId) {
         // Cette méthode est gardée pour compatibilité
-    }
-    
-    public int getTypeDevisId() {
-        return typeDevis != null ? typeDevis.getId() : 0;
-    }
-    
-    public void setTypeDevisId(int typeDevisId) {
-        // Cette méthode est gardée pour compatibilité
-    }
-    
-    public LocalDateTime getDateDevis() {
-        return dateDevis;
-    }
-    
-    public void setDateDevis(LocalDateTime dateDevis) {
-        this.dateDevis = dateDevis;
     }
     
     public Statut getStatut() {
@@ -109,22 +76,21 @@ public class Devis {
         // Cette méthode est gardée pour compatibilité
     }
     
-    public List<DetailDevis> getDetails() {
-        return details;
+    public LocalDateTime getDate() {
+        return date;
     }
     
-    public void setDetails(List<DetailDevis> details) {
-        this.details = details;
+    public void setDate(LocalDateTime date) {
+        this.date = date;
     }
     
     @Override
     public String toString() {
-        return "Devis{" +
+        return "DemandeStatut{" +
                 "id=" + id +
                 ", demandeId=" + getDemandeId() +
-                ", typeDevisId=" + getTypeDevisId() +
-                ", dateDevis=" + dateDevis +
                 ", statutId=" + getStatutId() +
+                ", date=" + date +
                 '}';
     }
 }

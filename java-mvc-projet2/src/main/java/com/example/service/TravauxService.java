@@ -1,144 +1,53 @@
 package com.example.service;
 
 import com.example.model.Travaux;
+import com.example.repository.TravauxRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Service pour la gestion des travaux
  */
+@Service
 public class TravauxService {
     
-    private static final String SELECT_ALL_TRAVAUX = 
-        "SELECT id, demande_id, statut_travaux_id FROM travaux ORDER BY id DESC";
-    
-    private static final String SELECT_TRAVAUX_BY_ID = 
-        "SELECT id, demande_id, statut_travaux_id FROM travaux WHERE id = ?";
-    
-    private static final String SELECT_TRAVAUX_BY_DEMANDE = 
-        "SELECT id, demande_id, statut_travaux_id FROM travaux WHERE demande_id = ? ORDER BY id DESC";
-    
-    private static final String INSERT_TRAVAUX = 
-        "INSERT INTO travaux (demande_id, statut_travaux_id) VALUES (?, ?)";
-    
-    private static final String UPDATE_TRAVAUX = 
-        "UPDATE travaux SET demande_id = ?, statut_travaux_id = ? WHERE id = ?";
-    
-    private static final String DELETE_TRAVAUX = 
-        "DELETE FROM travaux WHERE id = ?";
+    @Autowired
+    private TravauxRepository travauxRepository;
     
     /**
      * Récupère tous les travaux
      */
-    public List<Travaux> getAllTravaux(Connection conn) throws SQLException {
-        List<Travaux> travauxList = new ArrayList<>();
-        
-        try (PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_TRAVAUX);
-             ResultSet rs = stmt.executeQuery()) {
-            
-            while (rs.next()) {
-                Travaux travaux = new Travaux();
-                travaux.setId(rs.getInt("id"));
-                travaux.setDemandeId(rs.getInt("demande_id"));
-                travaux.setStatutTravauxId(rs.getInt("statut_travaux_id"));
-                travauxList.add(travaux);
-            }
-        }
-        
-        return travauxList;
+    public List<Travaux> getAllTravaux() {
+        return travauxRepository.findAll();
     }
     
     /**
-     * Récupère un travaux par son ID
+     * Récupère un travail par son ID
      */
-    public Travaux getTravauxById(Connection conn, int id) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(SELECT_TRAVAUX_BY_ID)) {
-            stmt.setInt(1, id);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Travaux travaux = new Travaux();
-                    travaux.setId(rs.getInt("id"));
-                    travaux.setDemandeId(rs.getInt("demande_id"));
-                    travaux.setStatutTravauxId(rs.getInt("statut_travaux_id"));
-                    return travaux;
-                }
-            }
-        }
-        
-        return null;
+    public Travaux getTravauxById(int id) {
+        return travauxRepository.findById(id).orElse(null);
     }
     
     /**
-     * Récupère les travaux pour une demande
+     * Crée un nouveau travail
      */
-    public List<Travaux> getTravauxByDemande(Connection conn, int demandeId) throws SQLException {
-        List<Travaux> travauxList = new ArrayList<>();
-        
-        try (PreparedStatement stmt = conn.prepareStatement(SELECT_TRAVAUX_BY_DEMANDE)) {
-            stmt.setInt(1, demandeId);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Travaux travaux = new Travaux();
-                    travaux.setId(rs.getInt("id"));
-                    travaux.setDemandeId(rs.getInt("demande_id"));
-                    travaux.setStatutTravauxId(rs.getInt("statut_travaux_id"));
-                    travauxList.add(travaux);
-                }
-            }
-        }
-        
-        return travauxList;
+    public Travaux createTravaux(Travaux travaux) {
+        return travauxRepository.save(travaux);
     }
     
     /**
-     * Crée un nouveau travaux
+     * Met à jour un travail
      */
-    public void createTravaux(Connection conn, Travaux travaux) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(INSERT_TRAVAUX, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setInt(1, travaux.getDemandeId());
-            stmt.setInt(2, travaux.getStatutTravauxId());
-            
-            int affectedRows = stmt.executeUpdate();
-            
-            if (affectedRows == 0) {
-                throw new SQLException("La création du travaux a échoué, aucune ligne affectée.");
-            }
-            
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    travaux.setId(generatedKeys.getInt(1));
-                } else {
-                    throw new SQLException("La création du travaux a échoué, aucun ID obtenu.");
-                }
-            }
-        }
+    public Travaux updateTravaux(Travaux travaux) {
+        return travauxRepository.save(travaux);
     }
     
     /**
-     * Met à jour un travaux
+     * Supprime un travail
      */
-    public boolean updateTravaux(Connection conn, Travaux travaux) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(UPDATE_TRAVAUX)) {
-            stmt.setInt(1, travaux.getDemandeId());
-            stmt.setInt(2, travaux.getStatutTravauxId());
-            stmt.setInt(3, travaux.getId());
-            
-            return stmt.executeUpdate() > 0;
-        }
-    }
-    
-    /**
-     * Supprime un travaux
-     */
-    public boolean deleteTravaux(Connection conn, int id) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(DELETE_TRAVAUX)) {
-            stmt.setInt(1, id);
-            
-            return stmt.executeUpdate() > 0;
-        }
+    public void deleteTravaux(int id) {
+        travauxRepository.deleteById(id);
     }
 }

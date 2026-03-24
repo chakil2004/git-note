@@ -1,126 +1,91 @@
 package com.example.service;
 
 import com.example.model.Demande;
+import com.example.model.DemandeStatut;
+import com.example.model.Statut;
+import com.example.repository.DemandeRepository;
+import com.example.repository.DemandeStatutRepository;
+import com.example.repository.StatutRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Service pour la gestion des demandes de forage
  */
+@Service
 public class DemandeService {
     
-    private static final String SELECT_ALL_DEMANDES = 
-        "SELECT id, client_id, date_demande, description, lieu FROM demande ORDER BY date_demande DESC";
+    @Autowired
+    private DemandeRepository demandeRepository;
     
-    private static final String SELECT_DEMANDE_BY_ID = 
-        "SELECT id, client_id, date_demande, description, lieu FROM demande WHERE id = ?";
+    @Autowired
+    private DemandeStatutRepository demandeStatutRepository;
     
-    private static final String INSERT_DEMANDE = 
-        "INSERT INTO demande (client_id, date_demande, description, lieu) VALUES (?, ?, ?, ?)";
-    
-    private static final String UPDATE_DEMANDE = 
-        "UPDATE demande SET client_id = ?, date_demande = ?, description = ?, lieu = ? WHERE id = ?";
-    
-    private static final String DELETE_DEMANDE = 
-        "DELETE FROM demande WHERE id = ?";
+    @Autowired
+    private StatutRepository statutRepository;
     
     /**
      * Récupère toutes les demandes
      */
-    public List<Demande> getAllDemandes(Connection conn) throws SQLException {
-        List<Demande> demandes = new ArrayList<>();
-        
-        try (PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_DEMANDES);
-             ResultSet rs = stmt.executeQuery()) {
-            
-            while (rs.next()) {
-                Demande demande = new Demande();
-                demande.setId(rs.getInt("id"));
-                demande.setClientId(rs.getInt("client_id"));
-                demande.setDateDemande(rs.getTimestamp("date_demande").toLocalDateTime());
-                demande.setDescription(rs.getString("description"));
-                demande.setLieu(rs.getString("lieu"));
-                demandes.add(demande);
-            }
-        }
-        
-        return demandes;
+    public List<Demande> getAllDemandes() {
+        return demandeRepository.findAll();
     }
     
     /**
      * Récupère une demande par son ID
      */
-    public Demande getDemandeById(Connection conn, int id) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(SELECT_DEMANDE_BY_ID)) {
-            stmt.setInt(1, id);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Demande demande = new Demande();
-                    demande.setId(rs.getInt("id"));
-                    demande.setClientId(rs.getInt("client_id"));
-                    demande.setDateDemande(rs.getTimestamp("date_demande").toLocalDateTime());
-                    demande.setDescription(rs.getString("description"));
-                    demande.setLieu(rs.getString("lieu"));
-                    return demande;
-                }
-            }
-        }
-        
-        return null;
+    public Demande getDemandeById(int id) {
+        return demandeRepository.findById(id).orElse(null);
     }
     
     /**
-     * Crée une nouvelle demande
+     * Crée une nouvelle demande avec son statut initial dans une transaction atomique
+     * Si une erreur se produit, tout est annulé (rollback)
      */
-    public void createDemande(Connection conn, Demande demande) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(INSERT_DEMANDE, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setInt(1, demande.getClientId());
-            stmt.setTimestamp(2, Timestamp.valueOf(demande.getDateDemande()));
-            stmt.setString(3, demande.getDescription());
-            stmt.setString(4, demande.getLieu());
+    @Transactional(rollbackFor = Exception.class)
+    public Demande createDemande(Demande demande) {
+        try {
+            // 1. Créer et sauvegarder la demande
+            Demande savedDemande = demandeRepository.save(demande);
             
-            int affectedRows = stmt.executeUpdate();
+            // 2. Récupérer l'ID généré automatiquement
+            int demandeId = savedDemande.getId();  // ID généré par AUTO_INCREMENT
             
-            if (affectedRows == 0) {
-                throw new SQLException("La création de la demande a échoué, aucune ligne affectée.");
-            }
+            // 3. Récupérer le statut initial "En attente" (ID = 1)
+            Statut statut = statutRepository.findById(1)
+                    .orElseThrow(() -> new Exception("Statut 'En attente' non trouvé"));
             
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    demande.setId(generatedKeys.getInt(1));
-                } else {
-                    throw new SQLException("La création de la demande a échoué, aucun ID obtenu.");
-                }
-            }
+            // 4. Créer l'entrée de statut pour la demande
+            DemandeStatut demandeStatut = new DemandeStatut();
+            demandeStatut.setDemande(savedDemande);  // Contient déjà l'ID
+            demandeStatut.setStatut(statut);
+            demandeStatut.setDate(java.time.LocalDateTime.now());
+            
+            // 5. Insérer dans demande_statut
+            demandeStatutRepository.save(demandeStatut);
+            
+            return savedDemande;
+            
+        } catch (Exception e) {
+            // En cas d'erreur, la transaction sera automatiquement rollbackée
+            throw new RuntimeException("Erreur lors de la création de la demande avec statut: " + e.getMessage(), e);
         }
     }
     
     /**
      * Met à jour une demande
      */
-    public boolean updateDemande(Connection conn, Demande demande) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(UPDATE_DEMANDE)) {
-            stmt.setInt(1, demande.getClientId());
-            stmt.setTimestamp(2, Timestamp.valueOf(demande.getDateDemande()));
-            stmt.setString(3, demande.getDescription());
-            stmt.setString(4, demande.getLieu());
-            stmt.setInt(5, demande.getId());
-            
-            return stmt.executeUpdate() > 0;
-        }
+    public Demande updateDemande(Demande demande) {
+        return demandeRepository.save(demande);
     }
     
     /**
      * Supprime une demande
      */
-    public boolean deleteDemande(Connection conn, int id) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(DELETE_DEMANDE)) {
-            stmt.setInt(1, id);
-            
-            return stmt.executeUpdate() > 0;
-        }
+    public void deleteDemande(int id) {
+        demandeRepository.deleteById(id);
     }
 }
