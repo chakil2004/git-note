@@ -27,8 +27,8 @@ public class Demande {
     @Column(name = "lieu")
     private String lieu;
     
-    @OneToOne(mappedBy = "demande", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Devis devis;
+    @OneToMany(mappedBy = "demande", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Devis> devis;
     
     @OneToOne(mappedBy = "demande", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Travaux travaux;
@@ -94,11 +94,11 @@ public class Demande {
         this.lieu = lieu;
     }
     
-    public Devis getDevis() {
+    public List<Devis> getDevis() {
         return devis;
     }
     
-    public void setDevis(Devis devis) {
+    public void setDevis(List<Devis> devis) {
         this.devis = devis;
     }
     

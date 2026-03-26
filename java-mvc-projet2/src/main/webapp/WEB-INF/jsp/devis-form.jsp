@@ -39,35 +39,7 @@
                         <input type="hidden" name="id" value="<%= devis.getId() %>">
                     <% } %>
                     
-                    <div class="form-group">
-                        <label for="demandeId">Demande:</label>
-                        <select id="demandeId" name="demandeId" class="form-control" required>
-                            <option value="">Sélectionner une demande...</option>
-                            <option value="1" <%= isEdit && devis.getDemandeId() == 1 ? "selected" : "" %>>Demande 1</option>
-                            <option value="2" <%= isEdit && devis.getDemandeId() == 2 ? "selected" : "" %>>Demande 2</option>
-                            <option value="3" <%= isEdit && devis.getDemandeId() == 3 ? "selected" : "" %>>Demande 3</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="typeDevisId">Type de devis:</label>
-                        <select id="typeDevisId" name="typeDevisId" class="form-control" required>
-                            <option value="">Sélectionner un type...</option>
-                            <option value="1" <%= isEdit && devis.getTypeDevisId() == 1 ? "selected" : "" %>>Forage</option>
-                            <option value="2" <%= isEdit && devis.getTypeDevisId() == 2 ? "selected" : "" %>>Installation</option>
-                            <option value="3" <%= isEdit && devis.getTypeDevisId() == 3 ? "selected" : "" %>>Maintenance</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="statutId">Statut:</label>
-                        <select id="statutId" name="statutId" class="form-control" required>
-                            <option value="">Sélectionner un statut...</option>
-                            <option value="1" <%= isEdit && devis.getStatutId() == 1 ? "selected" : "" %>>En attente</option>
-                            <option value="2" <%= isEdit && devis.getStatutId() == 2 ? "selected" : "" %>>Validé</option>
-                            <option value="3" <%= isEdit && devis.getStatutId() == 3 ? "selected" : "" %>>Rejeté</option>
-                        </select>
-                    </div>
+
                     
                     <div class="form-actions">
                         <button type="submit" class="btn">

@@ -1,22 +1,26 @@
 package com.example.controller;
 
 import com.example.model.Devis;
+import com.example.model.DetailDevis;
 import com.example.model.TypeDevis;
 import com.example.model.Statut;
 import com.example.model.Demande;
 import com.example.service.DevisService;
+import com.example.service.DetailDevisService;
 import com.example.service.TypeDevisService;
 import com.example.service.StatutService;
 import com.example.service.DemandeService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller pour gérer les devis
@@ -28,6 +32,9 @@ public class DevisController {
     private DevisService devisService;
     
     @Autowired
+    private DetailDevisService detailDevisService;
+    
+    @Autowired
     private TypeDevisService typeDevisService;
     
     @Autowired
@@ -35,6 +42,36 @@ public class DevisController {
     
     @Autowired
     private DemandeService demandeService;
+    
+    @GetMapping("/devis/list")
+    public String listDevisOnly(Model model) {
+        // Charger la liste des devis, types de devis, statuts et demandes
+        List<Devis> devisList = devisService.getAllDevis();
+        List<TypeDevis> typesList = typeDevisService.getAllTypes();
+        List<Statut> statutsList = statutService.getAllStatuts();
+        List<Demande> demandesList = demandeService.getAllDemandes();
+        
+        model.addAttribute("devis", devisList);
+        model.addAttribute("types", typesList);
+        model.addAttribute("statuts", statutsList);
+        model.addAttribute("demandes", demandesList);
+        model.addAttribute("pageTitle", "Liste des Devis");
+        return "devis-list";
+    }
+    
+    @GetMapping("/devis/create")
+    public String createDevisForm(Model model) {
+        // Charger les listes nécessaires pour la création
+        List<TypeDevis> typesList = typeDevisService.getAllTypes();
+        List<Statut> statutsList = statutService.getAllStatuts();
+        List<Demande> demandesList = demandeService.getAllDemandes();
+        
+        model.addAttribute("types", typesList);
+        model.addAttribute("statuts", statutsList);
+        model.addAttribute("demandes", demandesList);
+        model.addAttribute("pageTitle", "Créer un Devis");
+        return "devis";
+    }
     
     @GetMapping("/devis")
     public String listDevis(@RequestParam(value = "action", required = false) String action,
@@ -54,23 +91,13 @@ public class DevisController {
         } else if ("delete".equals(action) && id != null) {
             devisService.deleteDevis(id);
             redirectAttributes.addFlashAttribute("message", "Devis supprimé avec succès");
-            return "redirect:/devis";
+            return "redirect:/devis/list";
         } else {
-            // Charger la liste des devis, types de devis, statuts et demandes
-            List<Devis> devisList = devisService.getAllDevis();
-            List<TypeDevis> typesList = typeDevisService.getAllTypes();
-            List<Statut> statutsList = statutService.getAllStatuts();
-            List<Demande> demandesList = demandeService.getAllDemandes();
-            
-            model.addAttribute("devis", devisList);
-            model.addAttribute("types", typesList);
-            model.addAttribute("statuts", statutsList);
-            model.addAttribute("demandes", demandesList);
-            model.addAttribute("pageTitle", "Devis");
-            return "devis";
+            // Par défaut, rediriger vers la liste des devis
+            return "redirect:/devis/list";
         }
         
-        return "redirect:/devis";
+        return "redirect:/devis/list";
     }
     
     @PostMapping("/devis")
@@ -126,6 +153,31 @@ public class DevisController {
         }
         
         return "redirect:/devis";
+    }
+    
+    @PostMapping("/devis/createWithDetails")
+    @ResponseBody
+    public ResponseEntity<String> createDevisWithDetails(@RequestBody String jsonData) {
+        System.out.println("=== ROUTE ATTEINTE ===");
+        System.out.println("JSON brut reçu: " + jsonData);
+        
+        try {
+            // Test simple - juste retourner le JSON reçu
+            return ResponseEntity.ok("Route OK - JSON reçu: " + jsonData);
+            
+        } catch (Exception e) {
+            System.out.println("ERREUR: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Erreur: " + e.getMessage());
+        }
+    }
+    
+    // Route de test simple
+    @PostMapping("/devis/test")
+    @ResponseBody
+    public ResponseEntity<String> testRoute() {
+        System.out.println("=== ROUTE DE TEST ATTEINTE ===");
+        return ResponseEntity.ok("Test route OK");
     }
     
     @GetMapping("/devis/new")

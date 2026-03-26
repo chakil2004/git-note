@@ -27,24 +27,7 @@
             <a href="${pageContext.request.contextPath}/statut">Statuts</a>
         </nav>
         
-        <main class="main">
-            <div class="actions">
-                <h2>Mettre à jour le statut</h2>
-                <form action="${pageContext.request.contextPath}/demandeStatut" method="post" class="form-inline">
-                    <input type="hidden" name="demandeId" value="<%= demandeId != null ? demandeId : "" %>">
-                    <div class="form-group">
-                        <label for="nouveauStatutId">Nouveau Statut:</label>
-                        <select id="nouveauStatutId" name="nouveauStatutId" class="form-control" required>
-                            <option value="">Sélectionner un statut...</option>
-                            <option value="1">En attente</option>
-                            <option value="2">Accepté</option>
-                            <option value="3">Refusé</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Mettre à jour</button>
-                </form>
-            </div>
-            
+        <main class="main">         
             <div class="table-container">
                 <h2>Historique des statuts</h2>
                 <% if (statuts != null && !statuts.isEmpty()) { %>
