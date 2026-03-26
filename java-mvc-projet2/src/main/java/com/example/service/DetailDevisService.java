@@ -1,149 +1,62 @@
 package com.example.service;
 
 import com.example.model.DetailDevis;
+import com.example.repository.DetailDevisRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Service pour la gestion des détails de devis
  */
+@Service
 public class DetailDevisService {
     
-    private static final String SELECT_ALL_DETAILS = 
-        "SELECT id, devis_id, libelle, montant FROM detail_devis ORDER BY devis_id, id";
-    
-    private static final String SELECT_DETAIL_BY_ID = 
-        "SELECT id, devis_id, libelle, montant FROM detail_devis WHERE id = ?";
-    
-    private static final String SELECT_DETAILS_BY_DEVIS = 
-        "SELECT id, devis_id, libelle, montant FROM detail_devis WHERE devis_id = ? ORDER BY id";
-    
-    private static final String INSERT_DETAIL = 
-        "INSERT INTO detail_devis (devis_id, libelle, montant) VALUES (?, ?, ?)";
-    
-    private static final String UPDATE_DETAIL = 
-        "UPDATE detail_devis SET devis_id = ?, libelle = ?, montant = ? WHERE id = ?";
-    
-    private static final String DELETE_DETAIL = 
-        "DELETE FROM detail_devis WHERE id = ?";
+    @Autowired
+    private DetailDevisRepository detailDevisRepository;
     
     /**
      * Récupère tous les détails de devis
      */
-    public List<DetailDevis> getAllDetails(Connection conn) throws SQLException {
-        List<DetailDevis> details = new ArrayList<>();
-        
-        try (PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_DETAILS);
-             ResultSet rs = stmt.executeQuery()) {
-            
-            while (rs.next()) {
-                DetailDevis detail = new DetailDevis();
-                detail.setId(rs.getInt("id"));
-                detail.setDevisId(rs.getInt("devis_id"));
-                detail.setLibelle(rs.getString("libelle"));
-                detail.setMontant(rs.getBigDecimal("montant"));
-                details.add(detail);
-            }
-        }
-        
-        return details;
+    public List<DetailDevis> getAllDetails() {
+        return detailDevisRepository.findAll();
     }
     
     /**
      * Récupère un détail par son ID
      */
-    public DetailDevis getDetailById(Connection conn, int id) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(SELECT_DETAIL_BY_ID)) {
-            stmt.setInt(1, id);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    DetailDevis detail = new DetailDevis();
-                    detail.setId(rs.getInt("id"));
-                    detail.setDevisId(rs.getInt("devis_id"));
-                    detail.setLibelle(rs.getString("libelle"));
-                    detail.setMontant(rs.getBigDecimal("montant"));
-                    return detail;
-                }
-            }
-        }
-        
-        return null;
+    public DetailDevis getDetailById(int id) {
+        return detailDevisRepository.findById(id).orElse(null);
     }
     
     /**
-     * Récupère les détails pour un devis
+     * Récupère les détails par devis
      */
-    public List<DetailDevis> getDetailsByDevis(Connection conn, int devisId) throws SQLException {
-        List<DetailDevis> details = new ArrayList<>();
-        
-        try (PreparedStatement stmt = conn.prepareStatement(SELECT_DETAILS_BY_DEVIS)) {
-            stmt.setInt(1, devisId);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    DetailDevis detail = new DetailDevis();
-                    detail.setId(rs.getInt("id"));
-                    detail.setDevisId(rs.getInt("devis_id"));
-                    detail.setLibelle(rs.getString("libelle"));
-                    detail.setMontant(rs.getBigDecimal("montant"));
-                    details.add(detail);
-                }
-            }
-        }
-        
-        return details;
+    public List<DetailDevis> getDetailsByDevis(int devisId) {
+        return detailDevisRepository.findAll().stream()
+                .filter(detail -> detail.getDevisId() == devisId)
+                .toList();
     }
     
     /**
-     * Crée un nouveau détail de devis
+     * Crée un nouveau détail
      */
-    public void createDetail(Connection conn, DetailDevis detail) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(INSERT_DETAIL, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setInt(1, detail.getDevisId());
-            stmt.setString(2, detail.getLibelle());
-            stmt.setBigDecimal(3, detail.getMontant());
-            
-            int affectedRows = stmt.executeUpdate();
-            
-            if (affectedRows == 0) {
-                throw new SQLException("La création du détail a échoué, aucune ligne affectée.");
-            }
-            
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    detail.setId(generatedKeys.getInt(1));
-                } else {
-                    throw new SQLException("La création du détail a échoué, aucun ID obtenu.");
-                }
-            }
-        }
+    public DetailDevis createDetail(DetailDevis detail) {
+        return detailDevisRepository.save(detail);
     }
     
     /**
-     * Met à jour un détail de devis
+     * Met à jour un détail
      */
-    public boolean updateDetail(Connection conn, DetailDevis detail) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(UPDATE_DETAIL)) {
-            stmt.setInt(1, detail.getDevisId());
-            stmt.setString(2, detail.getLibelle());
-            stmt.setBigDecimal(3, detail.getMontant());
-            stmt.setInt(4, detail.getId());
-            
-            return stmt.executeUpdate() > 0;
-        }
+    public DetailDevis updateDetail(DetailDevis detail) {
+        return detailDevisRepository.save(detail);
     }
     
     /**
-     * Supprime un détail de devis
+     * Supprime un détail
      */
-    public boolean deleteDetail(Connection conn, int id) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(DELETE_DETAIL)) {
-            stmt.setInt(1, id);
-            
-            return stmt.executeUpdate() > 0;
-        }
+    public void deleteDetail(int id) {
+        detailDevisRepository.deleteById(id);
     }
 }

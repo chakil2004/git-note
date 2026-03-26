@@ -1,10 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
-<%@ page import="com.example.model.Demande" %>
-<%@ page import="com.example.model.Client" %>
+<%@ page import="com.example.model.DetailDevis" %>
 <%
-    List<Demande> demandes = (List<Demande>) request.getAttribute("demandes");
-    List<Client> clients = (List<Client>) request.getAttribute("clients");
+    List<DetailDevis> details = (List<DetailDevis>) request.getAttribute("details");
 %>
 
 <!DOCTYPE html>
@@ -12,20 +10,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROJET2 - Demandes de Forage</title>
+    <title>PROJET2 - Détails de Devis</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
     <div class="container">
         <header class="header">
-            <h1>Gestion des Demandes de Forage</h1>
-            <p>Liste de toutes les demandes de forage enregistrées</p>
+            <h1>Gestion des Détails de Devis</h1>
+            <p>Liste de tous les détails de devis enregistrés</p>
         </header>
         
         <nav class="nav">
             <a href="${pageContext.request.contextPath}/">Accueil</a>
             <a href="${pageContext.request.contextPath}/client">Clients</a>
-            <a href="${pageContext.request.contextPath}/demande" class="active">Demandes</a>
+            <a href="${pageContext.request.contextPath}/demande">Demandes</a>
             <a href="${pageContext.request.contextPath}/devis">Devis</a>
             <a href="${pageContext.request.contextPath}/travaux">Travaux</a>
             <a href="${pageContext.request.contextPath}/typeDevis">Types Devis</a>
@@ -35,57 +33,56 @@
         
         <main class="main">
             <div class="actions">
-                <h2>Ajouter une nouvelle demande</h2>
-                <form action="${pageContext.request.contextPath}/demande" method="post" class="form-inline">
+                <h2>Ajouter un nouveau détail de devis</h2>
+                <form action="${pageContext.request.contextPath}/detailDevis" method="post" class="form-inline">
                     <input type="hidden" name="action" value="add">
                     <div class="form-group">
-                        <label for="clientId">Client:</label>
-                        <select id="clientId" name="clientId" class="form-control" required>
-                            <option value="">Sélectionner un client...</option>
-                            <% if (clients != null) { 
-                                for (Client client : clients) { %>
-                                    <option value="<%= client.getId() %>"><%= client.getNom() %></option>
-                                <% }
-                            } %>
-                        </select>
+                        <label for="devisId">ID Devis:</label>
+                        <input type="number" id="devisId" name="devisId" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label for="description">Description:</label>
-                        <textarea id="description" name="description" class="form-control" rows="3" required></textarea>
+                        <label for="libelle">Libellé:</label>
+                        <input type="text" id="libelle" name="libelle" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label for="lieu">Lieu:</label>
-                        <input type="text" id="lieu" name="lieu" class="form-control" required>
+                        <label for="prixUnitaire">Prix Unitaire:</label>
+                        <input type="number" id="prixUnitaire" name="prixUnitaire" step="0.01" class="form-control" required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Ajouter la demande</button>
+                    <div class="form-group">
+                        <label for="quantite">Quantité:</label>
+                        <input type="number" id="quantite" name="quantite" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ajouter le détail</button>
                 </form>
             </div>
             
             <div class="table-container">
-                <h2>Liste des demandes</h2>
-                <% if (demandes != null && !demandes.isEmpty()) { %>
+                <h2>Liste des détails de devis</h2>
+                <% if (details != null && !details.isEmpty()) { %>
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Client</th>
-                                <th>Date Demande</th>
-                                <th>Lieu</th>
-                                <th>Description</th>
+                                <th>ID Devis</th>
+                                <th>Libellé</th>
+                                <th>Prix Unitaire</th>
+                                <th>Quantité</th>
+                                <th>Total</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <% for (Demande demande : demandes) { %>
+                            <% for (DetailDevis detail : details) { %>
                                 <tr>
-                                    <td><%= demande.getId() %></td>
-                                    <td><%= demande.getClientId() %></td>
-                                    <td><%= demande.getDateDemande() %></td>
-                                    <td><%= demande.getLieu() %></td>
-                                    <td><%= demande.getDescription().length() > 50 ? demande.getDescription().substring(0, 50) + "..." : demande.getDescription() %></td>
+                                    <td><%= detail.getId() %></td>
+                                    <td><%= detail.getDevisId() %></td>
+                                    <td><%= detail.getLibelle() %></td>
+                                    <td><%= detail.getPrixUnitaire() %> €</td>
+                                    <td><%= detail.getQuantite() %></td>
+                                    <td><%= detail.getPrixUnitaire().multiply(new java.math.BigDecimal(detail.getQuantite())) %> €</td>
                                     <td>
-                                        <a href="${pageContext.request.contextPath}/demande?action=edit&id=<%= demande.getId() %>" class="btn btn-sm btn-primary">Modifier</a>
-                                        <a href="${pageContext.request.contextPath}/demande?action=delete&id=<%= demande.getId() %>" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?')">Supprimer</a>
+                                        <a href="${pageContext.request.contextPath}/detailDevis?action=edit&id=<%= detail.getId() %>" class="btn btn-sm btn-primary">Modifier</a>
+                                        <a href="${pageContext.request.contextPath}/detailDevis?action=delete&id=<%= detail.getId() %>" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce détail de devis ?')">Supprimer</a>
                                     </td>
                                 </tr>
                             <% } %>
@@ -93,7 +90,7 @@
                     </table>
                 <% } else { %>
                     <div class="alert alert-info">
-                        Aucune demande de forage trouvée.
+                        Aucun détail de devis trouvé.
                     </div>
                 <% } %>
             </div>
@@ -121,12 +118,7 @@
         }
         
         .form-inline .form-control {
-            width: 200px;
-        }
-        
-        .form-inline textarea {
-            width: 300px;
-            min-height: 80px;
+            width: 150px;
         }
         
         .btn-sm {

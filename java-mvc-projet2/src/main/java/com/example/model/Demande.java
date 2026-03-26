@@ -1,22 +1,43 @@
 package com.example.model;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Modèle pour la table demande
  */
+@Entity
+@Table(name = "demande")
 public class Demande {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int clientId;
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "client_id")
+    private Client client;
+    
+    @Column(name = "date_demande")
     private LocalDateTime dateDemande;
+    
+    @Column(name = "description")
     private String description;
+    
+    @Column(name = "lieu")
     private String lieu;
+    
+    @OneToOne(mappedBy = "demande", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Devis devis;
+    
+    @OneToOne(mappedBy = "demande", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Travaux travaux;
     
     public Demande() {}
     
-    public Demande(int id, int clientId, LocalDateTime dateDemande, String description, String lieu) {
+    public Demande(int id, Client client, LocalDateTime dateDemande, String description, String lieu) {
         this.id = id;
-        this.clientId = clientId;
+        this.client = client;
         this.dateDemande = dateDemande;
         this.description = description;
         this.lieu = lieu;
@@ -31,12 +52,22 @@ public class Demande {
         this.id = id;
     }
     
+    public Client getClient() {
+        return client;
+    }
+    
+    public void setClient(Client client) {
+        this.client = client;
+    }
+    
+    // Pour compatibilité avec le code existant
     public int getClientId() {
-        return clientId;
+        return client != null ? client.getId() : 0;
     }
     
     public void setClientId(int clientId) {
-        this.clientId = clientId;
+        // Cette méthode est gardée pour compatibilité
+        // mais ne devrait plus être utilisée directement
     }
     
     public LocalDateTime getDateDemande() {
@@ -63,11 +94,27 @@ public class Demande {
         this.lieu = lieu;
     }
     
+    public Devis getDevis() {
+        return devis;
+    }
+    
+    public void setDevis(Devis devis) {
+        this.devis = devis;
+    }
+    
+    public Travaux getTravaux() {
+        return travaux;
+    }
+    
+    public void setTravaux(Travaux travaux) {
+        this.travaux = travaux;
+    }
+    
     @Override
     public String toString() {
         return "Demande{" +
                 "id=" + id +
-                ", clientId=" + clientId +
+                ", clientId=" + getClientId() +
                 ", dateDemande=" + dateDemande +
                 ", description='" + description + '\'' +
                 ", lieu='" + lieu + '\'' +

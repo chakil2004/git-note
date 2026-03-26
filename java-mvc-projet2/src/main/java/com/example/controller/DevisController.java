@@ -1,6 +1,5 @@
 package com.example.controller;
 
-import com.example.config.DatabaseConfig;
 import com.example.model.Devis;
 import com.example.model.TypeDevis;
 import com.example.model.Statut;
@@ -9,103 +8,132 @@ import com.example.service.DevisService;
 import com.example.service.TypeDevisService;
 import com.example.service.StatutService;
 import com.example.service.DemandeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
  * Controller pour gérer les devis
  */
-@WebServlet("/devis")
-public class DevisController extends HttpServlet {
+@Controller
+public class DevisController {
     
+    @Autowired
     private DevisService devisService;
+    
+    @Autowired
     private TypeDevisService typeDevisService;
+    
+    @Autowired
     private StatutService statutService;
+    
+    @Autowired
     private DemandeService demandeService;
     
-    @Override
-    public void init() {
-        devisService = new DevisService();
-        typeDevisService = new TypeDevisService();
-        statutService = new StatutService();
-        demandeService = new DemandeService();
+    @GetMapping("/devis")
+    public String listDevis(@RequestParam(value = "action", required = false) String action,
+                           @RequestParam(value = "id", required = false) Integer id,
+                           Model model,
+                           RedirectAttributes redirectAttributes) {
+        
+        if ("edit".equals(action) && id != null) {
+            Devis devis = devisService.getDevisById(id);
+            if (devis != null) {
+                model.addAttribute("devis", devis);
+                model.addAttribute("types", typeDevisService.getAllTypes());
+                model.addAttribute("statuts", statutService.getAllStatuts());
+                model.addAttribute("demandes", demandeService.getAllDemandes());
+                return "devis-form";
+            }
+        } else if ("delete".equals(action) && id != null) {
+            devisService.deleteDevis(id);
+            redirectAttributes.addFlashAttribute("message", "Devis supprimé avec succès");
+            return "redirect:/devis";
+        } else {
+            // Charger la liste des devis, types de devis, statuts et demandes
+            List<Devis> devisList = devisService.getAllDevis();
+            List<TypeDevis> typesList = typeDevisService.getAllTypes();
+            List<Statut> statutsList = statutService.getAllStatuts();
+            List<Demande> demandesList = demandeService.getAllDemandes();
+            
+            model.addAttribute("devis", devisList);
+            model.addAttribute("types", typesList);
+            model.addAttribute("statuts", statutsList);
+            model.addAttribute("demandes", demandesList);
+            model.addAttribute("pageTitle", "Devis");
+            return "devis";
+        }
+        
+        return "redirect:/devis";
     }
     
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
+    @PostMapping("/devis")
+    public String handleDevis(@RequestParam(value = "action") String action,
+                             @RequestParam(value = "id", required = false) Integer id,
+                             @RequestParam("demandeId") int demandeId,
+                             @RequestParam("typeDevisId") int typeDevisId,
+                             @RequestParam("statutId") int statutId,
+                             RedirectAttributes redirectAttributes) {
         
-        String action = request.getParameter("action");
-        
-        try (Connection conn = DatabaseConfig.getConnection()) {
-            if ("edit".equals(action)) {
-                int id = Integer.parseInt(request.getParameter("id"));
-                Devis devis = devisService.getDevisById(conn, id);
-                request.setAttribute("devis", devis);
-                request.getRequestDispatcher("/devis-form.jsp").forward(request, response);
-            } else if ("delete".equals(action)) {
-                int id = Integer.parseInt(request.getParameter("id"));
-                devisService.deleteDevis(conn, id);
-                response.sendRedirect(request.getContextPath() + "/devis");
-            } else {
-                // Charger la liste des devis, types de devis, statuts et demandes
-                List<Devis> devisList = devisService.getAllDevis(conn);
-                List<TypeDevis> typesList = typeDevisService.getAllTypes(conn);
-                List<Statut> statutsList = statutService.getAllStatuts(conn);
-                List<Demande> demandesList = demandeService.getAllDemandes(conn);
-                
-                request.setAttribute("devis", devisList);
-                request.setAttribute("types", typesList);
-                request.setAttribute("statuts", statutsList);
-                request.setAttribute("demandes", demandesList);
-                request.setAttribute("pageTitle", "Devis");
-                request.getRequestDispatcher("/devis.jsp").forward(request, response);
-            }
-        } catch (SQLException e) {
-            throw new ServletException("Erreur de base de données", e);
+        if ("add".equals(action)) {
+            Devis devis = new Devis();
+            
+            // Créer les objets de relation
+            com.example.model.Demande demande = new com.example.model.Demande();
+            demande.setId(demandeId);
+            devis.setDemande(demande);
+            
+            com.example.model.TypeDevis typeDevis = new com.example.model.TypeDevis();
+            typeDevis.setId(typeDevisId);
+            devis.setTypeDevis(typeDevis);
+            
+            com.example.model.Statut statut = new com.example.model.Statut();
+            statut.setId(statutId);
+            devis.setStatut(statut);
+            
+            devis.setDateDevis(java.time.LocalDateTime.now());
+            
+            devisService.createDevis(devis);
+            redirectAttributes.addFlashAttribute("message", "Devis créé avec succès");
+            
+        } else if ("update".equals(action) && id != null) {
+            Devis devis = new Devis();
+            devis.setId(id);
+            
+            // Créer les objets de relation
+            com.example.model.Demande demande = new com.example.model.Demande();
+            demande.setId(demandeId);
+            devis.setDemande(demande);
+            
+            com.example.model.TypeDevis typeDevis = new com.example.model.TypeDevis();
+            typeDevis.setId(typeDevisId);
+            devis.setTypeDevis(typeDevis);
+            
+            com.example.model.Statut statut = new com.example.model.Statut();
+            statut.setId(statutId);
+            devis.setStatut(statut);
+            
+            devis.setDateDevis(java.time.LocalDateTime.now());
+            
+            devisService.updateDevis(devis);
+            redirectAttributes.addFlashAttribute("message", "Devis mis à jour avec succès");
         }
+        
+        return "redirect:/devis";
     }
     
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
-        String action = request.getParameter("action");
-        
-        try (Connection conn = DatabaseConfig.getConnection()) {
-            if ("add".equals(action)) {
-                Devis devis = new Devis();
-                devis.setDemandeId(Integer.parseInt(request.getParameter("demandeId")));
-                devis.setTypeDevisId(Integer.parseInt(request.getParameter("typeDevisId")));
-                devis.setDateDevis(java.time.LocalDateTime.now());
-                devis.setStatutId(Integer.parseInt(request.getParameter("statutId")));
-                
-                devisService.createDevis(conn, devis);
-                
-            } else if ("update".equals(action)) {
-                Devis devis = new Devis();
-                devis.setId(Integer.parseInt(request.getParameter("id")));
-                devis.setDemandeId(Integer.parseInt(request.getParameter("demandeId")));
-                devis.setTypeDevisId(Integer.parseInt(request.getParameter("typeDevisId")));
-                devis.setDateDevis(java.time.LocalDateTime.parse(request.getParameter("dateDevis")));
-                devis.setStatutId(Integer.parseInt(request.getParameter("statutId")));
-                
-                devisService.updateDevis(conn, devis);
-            }
-            
-            response.sendRedirect(request.getContextPath() + "/devis");
-            
-        } catch (SQLException e) {
-            throw new ServletException("Erreur lors de l'opération", e);
-        }
+    @GetMapping("/devis/new")
+    public String newDevisForm(Model model) {
+        model.addAttribute("devis", new Devis());
+        model.addAttribute("types", typeDevisService.getAllTypes());
+        model.addAttribute("statuts", statutService.getAllStatuts());
+        model.addAttribute("demandes", demandeService.getAllDemandes());
+        return "devis-form";
     }
 }

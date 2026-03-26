@@ -1,23 +1,39 @@
 package com.example.model;
 
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 /**
  * Modèle pour la table detail_devis
  */
+@Entity
+@Table(name = "detail_devis")
 public class DetailDevis {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int devisId;
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "devis_id")
+    private Devis devis;
+    
+    @Column(name = "libelle")
     private String libelle;
-    private BigDecimal montant;
+    
+    @Column(name = "prix_unitaire")
+    private BigDecimal prixUnitaire;
+    
+    @Column(name = "quantite")
+    private int quantite;
     
     public DetailDevis() {}
     
-    public DetailDevis(int id, int devisId, String libelle, BigDecimal montant) {
+    public DetailDevis(int id, Devis devis, String libelle, BigDecimal prixUnitaire, int quantite) {
         this.id = id;
-        this.devisId = devisId;
+        this.devis = devis;
         this.libelle = libelle;
-        this.montant = montant;
+        this.prixUnitaire = prixUnitaire;
+        this.quantite = quantite;
     }
     
     // Getters and Setters
@@ -29,12 +45,21 @@ public class DetailDevis {
         this.id = id;
     }
     
+    public Devis getDevis() {
+        return devis;
+    }
+    
+    public void setDevis(Devis devis) {
+        this.devis = devis;
+    }
+    
+    // Pour compatibilité avec le code existant
     public int getDevisId() {
-        return devisId;
+        return devis != null ? devis.getId() : 0;
     }
     
     public void setDevisId(int devisId) {
-        this.devisId = devisId;
+        // Cette méthode est gardée pour compatibilité
     }
     
     public String getLibelle() {
@@ -45,21 +70,30 @@ public class DetailDevis {
         this.libelle = libelle;
     }
     
-    public BigDecimal getMontant() {
-        return montant;
+    public BigDecimal getPrixUnitaire() {
+        return prixUnitaire;
     }
     
-    public void setMontant(BigDecimal montant) {
-        this.montant = montant;
+    public void setPrixUnitaire(BigDecimal prixUnitaire) {
+        this.prixUnitaire = prixUnitaire;
+    }
+    
+    public int getQuantite() {
+        return quantite;
+    }
+    
+    public void setQuantite(int quantite) {
+        this.quantite = quantite;
     }
     
     @Override
     public String toString() {
         return "DetailDevis{" +
                 "id=" + id +
-                ", devisId=" + devisId +
+                ", devisId=" + getDevisId() +
                 ", libelle='" + libelle + '\'' +
-                ", montant=" + montant +
+                ", prixUnitaire=" + prixUnitaire +
+                ", quantite=" + quantite +
                 '}';
     }
 }

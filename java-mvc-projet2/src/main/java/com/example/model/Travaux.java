@@ -1,21 +1,32 @@
 package com.example.model;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 /**
  * Modèle pour la table travaux
  */
+@Entity
+@Table(name = "travaux")
 public class Travaux {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private int demandeId;
-    private int statutTravauxId;
+    
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "demande_id")
+    private Demande demande;
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "statut_travaux_id")
+    private StatutTravaux statutTravaux;
     
     public Travaux() {}
     
-    public Travaux(int id, int demandeId, int statutTravauxId) {
+    public Travaux(int id, Demande demande, StatutTravaux statutTravaux) {
         this.id = id;
-        this.demandeId = demandeId;
-        this.statutTravauxId = statutTravauxId;
+        this.demande = demande;
+        this.statutTravaux = statutTravaux;
     }
     
     // Getters and Setters
@@ -27,28 +38,45 @@ public class Travaux {
         this.id = id;
     }
     
+    public Demande getDemande() {
+        return demande;
+    }
+    
+    public void setDemande(Demande demande) {
+        this.demande = demande;
+    }
+    
+    public StatutTravaux getStatutTravaux() {
+        return statutTravaux;
+    }
+    
+    public void setStatutTravaux(StatutTravaux statutTravaux) {
+        this.statutTravaux = statutTravaux;
+    }
+    
+    // Pour compatibilité avec le code existant
     public int getDemandeId() {
-        return demandeId;
+        return demande != null ? demande.getId() : 0;
     }
     
     public void setDemandeId(int demandeId) {
-        this.demandeId = demandeId;
+        // Cette méthode est gardée pour compatibilité
     }
     
     public int getStatutTravauxId() {
-        return statutTravauxId;
+        return statutTravaux != null ? statutTravaux.getId() : 0;
     }
     
     public void setStatutTravauxId(int statutTravauxId) {
-        this.statutTravauxId = statutTravauxId;
+        // Cette méthode est gardée pour compatibilité
     }
     
     @Override
     public String toString() {
         return "Travaux{" +
                 "id=" + id +
-                ", demandeId=" + demandeId +
-                ", statutTravauxId=" + statutTravauxId +
+                ", demandeId=" + getDemandeId() +
+                ", statutTravauxId=" + getStatutTravauxId() +
                 '}';
     }
 }

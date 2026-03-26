@@ -1,87 +1,81 @@
 package com.example.controller;
 
-import com.example.config.DatabaseConfig;
 import com.example.model.Client;
 import com.example.service.ClientService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
  * Controller pour gérer les clients
  */
-@WebServlet("/client")
-public class ClientController extends HttpServlet {
+@Controller
+public class ClientController {
     
+    @Autowired
     private ClientService clientService;
     
-    @Override
-    public void init() {
-        clientService = new ClientService();
+    @GetMapping("/client")
+    public String listClients(@RequestParam(value = "action", required = false) String action,
+                              @RequestParam(value = "id", required = false) Integer id,
+                              Model model,
+                              RedirectAttributes redirectAttributes) {
+        
+        if ("edit".equals(action) && id != null) {
+            Client client = clientService.getClientById(id);
+            if (client != null) {
+                model.addAttribute("client", client);
+                return "client-form";
+            }
+        } else if ("delete".equals(action) && id != null) {
+            clientService.deleteClient(id);
+            redirectAttributes.addFlashAttribute("message", "Client supprimé avec succès");
+            return "redirect:/client";
+        } else {
+            List<Client> clients = clientService.getAllClients();
+            model.addAttribute("clients", clients);
+            model.addAttribute("pageTitle", "Clients");
+            return "clients";
+        }
+        
+        return "redirect:/client";
     }
     
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
+    @PostMapping("/client")
+    public String handleClient(@RequestParam(value = "action") String action,
+                               @RequestParam(value = "id", required = false) Integer id,
+                               @RequestParam("nom") String nom,
+                               @RequestParam("contact") String contact,
+                               RedirectAttributes redirectAttributes) {
         
-        String action = request.getParameter("action");
-        
-        try (Connection conn = DatabaseConfig.getConnection()) {
-            if ("edit".equals(action)) {
-                int id = Integer.parseInt(request.getParameter("id"));
-                Client client = clientService.getClientById(conn, id);
-                request.setAttribute("client", client);
-                request.getRequestDispatcher("/client-form.jsp").forward(request, response);
-            } else if ("delete".equals(action)) {
-                int id = Integer.parseInt(request.getParameter("id"));
-                clientService.deleteClient(conn, id);
-                response.sendRedirect(request.getContextPath() + "/client");
-            } else {
-                List<Client> clients = clientService.getAllClients(conn);
-                request.setAttribute("clients", clients);
-                request.setAttribute("pageTitle", "Clients");
-                request.getRequestDispatcher("/clients.jsp").forward(request, response);
-            }
-        } catch (SQLException e) {
-            throw new ServletException("Erreur de base de données", e);
+        if ("add".equals(action)) {
+            Client client = new Client();
+            client.setNom(nom);
+            client.setContact(contact);
+            clientService.createClient(client);
+            redirectAttributes.addFlashAttribute("message", "Client créé avec succès");
+            
+        } else if ("update".equals(action) && id != null) {
+            Client client = new Client();
+            client.setId(id);
+            client.setNom(nom);
+            client.setContact(contact);
+            clientService.updateClient(client);
+            redirectAttributes.addFlashAttribute("message", "Client mis à jour avec succès");
         }
+        
+        return "redirect:/client";
     }
     
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
-        String action = request.getParameter("action");
-        
-        try (Connection conn = DatabaseConfig.getConnection()) {
-            if ("add".equals(action)) {
-                Client client = new Client();
-                client.setNom(request.getParameter("nom"));
-                client.setContact(request.getParameter("contact"));
-                
-                clientService.createClient(conn, client);
-                
-            } else if ("update".equals(action)) {
-                Client client = new Client();
-                client.setId(Integer.parseInt(request.getParameter("id")));
-                client.setNom(request.getParameter("nom"));
-                client.setContact(request.getParameter("contact"));
-                
-                clientService.updateClient(conn, client);
-            }
-            
-            response.sendRedirect(request.getContextPath() + "/client");
-            
-        } catch (SQLException e) {
-            throw new ServletException("Erreur lors de l'opération", e);
-        }
+    @GetMapping("/client/new")
+    public String newClientForm(Model model) {
+        model.addAttribute("client", new Client());
+        return "client-form";
     }
 }

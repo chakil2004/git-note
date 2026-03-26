@@ -17,6 +17,7 @@ CREATE TABLE demande (
         FOREIGN KEY (client_id) REFERENCES client(id)
 );
 
+
 CREATE TABLE type_devis (
     id INT AUTO_INCREMENT PRIMARY KEY,
     libelle VARCHAR(100) NOT NULL
@@ -45,10 +46,11 @@ CREATE TABLE detail_devis (
     id INT AUTO_INCREMENT PRIMARY KEY,
     devis_id INT NOT NULL,
     libelle VARCHAR(255) NOT NULL,
-    montant DECIMAL(12,2) NOT NULL DEFAULT 0,
+    montant DECIMAL(12,2) NOT NULL DEFAULT 0,////supprime
     CONSTRAINT fk_detail_devis_devis
         FOREIGN KEY (devis_id) REFERENCES devis(id)
 );
+(prix unitaire , qantiter)
 
 CREATE TABLE statut_travaux (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -81,3 +83,26 @@ INSERT INTO statut_travaux (libelle) VALUES
 ('Récupération eau'),
 ('Test sanitaire'),
 ('Terminé');
+
+///////////////changement 23/03/2026 //////////////////////////////
+
+CREATE TABLE detail_devis (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    devis_id INT NOT NULL,
+    libelle VARCHAR(255) NOT NULL,
+    prix_unitaire DECIMAL(12,2) NOT NULL,
+    quantite INT NOT NULL,
+    CONSTRAINT fk_detail_devis_devis
+        FOREIGN KEY (devis_id) REFERENCES devis(id)
+);
+
+CREATE TABLE demande_statut (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    demande_id INT NOT NULL,
+    statut INT NOT NULL,
+    date DATETIME NOT NULL,
+    CONSTRAINT fk_demande_statut_demande
+        FOREIGN KEY (demande_id) REFERENCES demande(id),
+    CONSTRAINT fk_demande_statut_statut
+        FOREIGN KEY (statut) REFERENCES statut(id)
+);

@@ -1,10 +1,18 @@
 package com.example.model;
 
+import jakarta.persistence.*;
+
 /**
  * Modèle pour la table type_devis
  */
+@Entity
+@Table(name = "type_devis")
 public class TypeDevis {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    
+    @Column(name = "libelle")
     private String libelle;
     
     public TypeDevis() {}

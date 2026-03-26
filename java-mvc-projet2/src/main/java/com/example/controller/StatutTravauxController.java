@@ -1,85 +1,74 @@
 package com.example.controller;
 
-import com.example.config.DatabaseConfig;
 import com.example.model.StatutTravaux;
 import com.example.service.StatutTravauxService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
  * Controller pour gérer les statuts de travaux
  */
-@WebServlet("/statutTravaux")
-public class StatutTravauxController extends HttpServlet {
+@Controller
+public class StatutTravauxController {
     
+    @Autowired
     private StatutTravauxService statutTravauxService;
     
-    @Override
-    public void init() {
-        statutTravauxService = new StatutTravauxService();
+    @GetMapping("/statutTravaux")
+    public String listStatutsTravaux(@RequestParam(value = "action", required = false) String action,
+                                     @RequestParam(value = "id", required = false) Integer id,
+                                     Model model,
+                                     RedirectAttributes redirectAttributes) {
+        
+        if ("edit".equals(action) && id != null) {
+            StatutTravaux statut = statutTravauxService.getStatutById(id);
+            if (statut != null) {
+                model.addAttribute("statut", statut);
+                return "statutTravaux-form";
+            }
+        } else if ("delete".equals(action) && id != null) {
+            statutTravauxService.deleteStatut(id);
+            redirectAttributes.addFlashAttribute("message", "Statut supprimé avec succès");
+            return "redirect:/statutTravaux";
+        } else {
+            List<StatutTravaux> statuts = statutTravauxService.getAllStatuts();
+            model.addAttribute("statuts", statuts);
+            model.addAttribute("pageTitle", "Statuts Travaux");
+            return "statutTravaux";
+        }
+        
+        return "redirect:/statutTravaux";
     }
     
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
+    @PostMapping("/statutTravaux")
+    public String handleStatutTravaux(@RequestParam(value = "action") String action,
+                                     @RequestParam(value = "id", required = false) Integer id,
+                                     @RequestParam("libelle") String libelle,
+                                     RedirectAttributes redirectAttributes) {
         
-        String action = request.getParameter("action");
-        
-        try (Connection conn = DatabaseConfig.getConnection()) {
-            if ("edit".equals(action)) {
-                int id = Integer.parseInt(request.getParameter("id"));
-                StatutTravaux statut = statutTravauxService.getStatutById(conn, id);
-                request.setAttribute("statut", statut);
-                request.getRequestDispatcher("/statutTravaux-form.jsp").forward(request, response);
-            } else if ("delete".equals(action)) {
-                int id = Integer.parseInt(request.getParameter("id"));
-                statutTravauxService.deleteStatut(conn, id);
-                response.sendRedirect(request.getContextPath() + "/statutTravaux");
-            } else {
-                List<StatutTravaux> statuts = statutTravauxService.getAllStatuts(conn);
-                request.setAttribute("statuts", statuts);
-                request.setAttribute("pageTitle", "Statuts de Travaux");
-                request.getRequestDispatcher("/statutTravaux.jsp").forward(request, response);
-            }
-        } catch (SQLException e) {
-            throw new ServletException("Erreur de base de données", e);
-        }
-    }
-    
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
-        String action = request.getParameter("action");
-        
-        try (Connection conn = DatabaseConfig.getConnection()) {
-            if ("add".equals(action)) {
-                StatutTravaux statut = new StatutTravaux();
-                statut.setLibelle(request.getParameter("libelle"));
-                
-                statutTravauxService.createStatut(conn, statut);
-                
-            } else if ("update".equals(action)) {
-                StatutTravaux statut = new StatutTravaux();
-                statut.setId(Integer.parseInt(request.getParameter("id")));
-                statut.setLibelle(request.getParameter("libelle"));
-                
-                statutTravauxService.updateStatut(conn, statut);
-            }
+        if ("add".equals(action)) {
+            StatutTravaux statut = new StatutTravaux();
+            statut.setLibelle(libelle);
             
-            response.sendRedirect(request.getContextPath() + "/statutTravaux");
+            statutTravauxService.createStatut(statut);
+            redirectAttributes.addFlashAttribute("message", "Statut créé avec succès");
             
-        } catch (SQLException e) {
-            throw new ServletException("Erreur lors de l'opération", e);
+        } else if ("update".equals(action) && id != null) {
+            StatutTravaux statut = new StatutTravaux();
+            statut.setId(id);
+            statut.setLibelle(libelle);
+            
+            statutTravauxService.updateStatut(statut);
+            redirectAttributes.addFlashAttribute("message", "Statut mis à jour avec succès");
         }
+        
+        return "redirect:/statutTravaux";
     }
 }

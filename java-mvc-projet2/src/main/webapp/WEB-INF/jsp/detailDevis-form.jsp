@@ -56,9 +56,15 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="montant">Montant (€):</label>
-                        <input type="number" id="montant" name="montant" step="0.01" class="form-control" 
-                               value="<%= isEdit ? detail.getMontant() : "" %>" required>
+                        <label for="prixUnitaire">Prix Unitaire (€):</label>
+                        <input type="number" id="prixUnitaire" name="prixUnitaire" step="0.01" class="form-control" 
+                               value="<%= isEdit ? detail.getPrixUnitaire() : "" %>" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="quantite">Quantité:</label>
+                        <input type="number" id="quantite" name="quantite" class="form-control" 
+                               value="<%= isEdit ? detail.getQuantite() : "" %>" required>
                     </div>
                     
                     <div class="form-actions">

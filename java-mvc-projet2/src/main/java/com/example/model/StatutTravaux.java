@@ -1,10 +1,18 @@
 package com.example.model;
 
+import jakarta.persistence.*;
+
 /**
  * Modèle pour la table statut_travaux
  */
+@Entity
+@Table(name = "statut_travaux")
 public class StatutTravaux {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    
+    @Column(name = "libelle")
     private String libelle;
     
     public StatutTravaux() {}
